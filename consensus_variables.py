@@ -64,6 +64,12 @@ somatic_maf_file = f"{deepcsa_run_dir}/clean_somatic/all_samples.somatic.mutatio
 clinvars_file = f"{origin_dir}/projects/bladder_ts/data/complete_cohort/samples_metadata/20250516_metadata_bladder.with_depths.tsv" #TODO: add a metadata.tsv file in the repo with all the metadata compiled
 clinvars_regr_file = f"{origin_dir}/projects/bladder_ts/data/complete_cohort/samples_metadata/20250516_metadata_bladder.with_depths.tsv"
 
+# oncodrive3d datasets
+## TODO, make sure that this are absolute paths to the datasets
+o3d_alt_datasets = "/data/bbg/nobackup/scratch/oncodrive3d/datasets_240506" # These "alt" are used to rerieve annotations in equivalent Uniprot ID that are missing in the MANE related ones
+o3d_datasets = "/data/bbg/nobackup/scratch/oncodrive3d/datasets_mane_240506"
+o3d_annotations = "/data/bbg/nobackup/scratch/oncodrive3d/annotations_mane_240506"
+
 
 
 
