@@ -58,6 +58,19 @@ def add_legend_patch(ax, heatmap_config):
             transform=ax.transAxes, va='bottom', ha='left', fontsize=10)
     ax.text(x_offset + 0.06, y_center+0.01, "Protein-affecting\nindels",
             transform=ax.transAxes, va='top', ha='left', fontsize=10)
+
+def add_dots_below_xticks(ax, dot_samples, offset = 27.5, size = 4, color = "black"):
+    """
+    Add dots below x-axis tick labels for specific samples.
+    """
+
+    xticks = ax.get_xticks()
+    xticklabels = [label.get_text() for label in ax.get_xticklabels()]
+
+    for tick, label in zip(xticks, xticklabels):
+        if label in dot_samples:
+            ax.plot(tick, offset, marker = 'o', color = color, markersize = size, 
+                    clip_on = False, zorder = 10)
     
 ## -- Main functions -- ##
 
@@ -83,6 +96,8 @@ def plot_double_heatmap(data, heatmap_config, save_file):
     annot_kws = {"size": heatmap_config["annot_fontsize"]},
     cbar = False)
     add_age_triangle(axs[0], len(heatmap_config["h1_subset"]))
+    duplicated_samples = [s for s in heatmap_config["duplicated_samples"] if s in heatmap_config["h1_subset"]]
+    add_dots_below_xticks(axs[0], duplicated_samples)
 
     ## redefine gene names
     genes = [gene.split("_")[0] for gene in data.index[::2]]
@@ -104,6 +119,8 @@ def plot_double_heatmap(data, heatmap_config, save_file):
     annot_kws = {"size": heatmap_config["annot_fontsize"]},
     cbar = False)
     add_age_triangle(axs[1], len(heatmap_config["h2_subset"]), add_text = True)
+    duplicated_samples = [s for s in heatmap_config["duplicated_samples"] if s in heatmap_config["h2_subset"]]
+    add_dots_below_xticks(axs[1], duplicated_samples)
 
     axs[1].set_yticks([])
     axs[1].set_yticklabels([])
