@@ -6,8 +6,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 
-
 sys.path.append('../../')
+
 from consensus_variables import deepcsa_run_dir
 
 
@@ -57,10 +57,13 @@ def process_normal_TERT_mutations(normal_path, TERT_info_38):
     normal_muts = pd.read_csv(os.path.join(normal_path + '/clean_somatic',
                                            'all_samples.somatic.mutations.tsv'),
                               sep='\t')
-    normal_muts = normal_muts[['CHROM','POS','REF','ALT','ALT_DEPTH','VAF','SAMPLE_ID']]
+    normal_muts = normal_muts[['CHROM','POS','REF','ALT','ALT_DEPTH','VAF','SAMPLE_ID', "TYPE"]]
     normal_TERT_muts = normal_muts[(normal_muts['CHROM']==('chr' + TERT_info_38['chr'])) &
                                    (normal_muts['POS'] >= int(TERT_info_38['start'])) &
-                                   (normal_muts['POS'] <= int(TERT_info_38['end']))]
+                                   (normal_muts['POS'] <= int(TERT_info_38['end'])) &
+                                   (normal_muts['TYPE'] == 'SNV')
+                                   ]
+    normal_TERT_muts = normal_TERT_muts.drop('TYPE', axis = 1)
     return normal_TERT_muts.rename(columns={'CHROM':'chr',
                                             'POS':'pos',
                                             'REF':'ref',
@@ -83,18 +86,9 @@ def process_site_selection(normal_path):
 def convert_relative_position(r, TERT_gene_TSS):
     return float(r['pos']) - TERT_gene_TSS
 
-def fetch_normal_TERT_mutations(normal_file):
-    return pd.read_csv(normal_file, sep='\t')
-
-def fetch_pcaw_TERT_mutations(pcawg_file):
-    return pd.read_csv(pcawg_file, sep='\t')
-
-
-def fetch_hartwig_TERT_mutations(hartwig_file):
-    return pd.read_csv(hartwig_file, sep='\t')
-
 def fetch_saturation_data(saturation_file):
-    return pd.read_csv(saturation_file, sep='\t')
+    data = pd.read_csv(saturation_file, sep='\t')
+    return data[["chr", "pos", "ref", "alt", "value", "p", "system"]]
 
 
 def draw_needleplot(axis,muts_data,ymax,factor,color_def,inverted=False):
@@ -173,7 +167,7 @@ def draw_stripplot(axis, data, color_def, value):
 
 
 def draw_scatter(axis_left,site_selection_data,saturation_data,color_def):
-    selection_saturation = pd.merge(site_selection_data,saturation_data,on=['pos','rel_pos','ref','alt'])
+    selection_saturation = pd.merge(site_selection_data, saturation_data, on=['pos','rel_pos','ref','alt'], how = 'inner')
     sns.scatterplot(selection_saturation,
                     y='site_selection',
                     x='value',
@@ -228,7 +222,6 @@ def plot_TERT_panel(figure_output_dir,
                     color_def,
                     metadata):
 
-    saturation_data['chr'] = 'chr' + saturation_data['chr'].astype(str)
     site_selection_data_format = site_selection_data_format.merge(saturation_data,on=['chr','pos','ref','alt','rel_pos'],how='outer')
     site_selection_data_format = site_selection_data_format[['chr','pos','ref','alt','site_selection','rel_pos', 'p_value']]
     site_selection_data_format['site_selection'] = site_selection_data_format['site_selection'].fillna(0)
@@ -263,9 +256,7 @@ def plot_TERT_panel(figure_output_dir,
     tidy_axis_continuous(ax_selection, ylabel_selection, 0, 900)
 
     #Draw panel of saturation
-    selected_cell_system = 'TERT-GBM'
-    filtered_saturation_data = saturation_data[saturation_data['system']==selected_cell_system]
-    extended_saturation_data = pd.merge(filtered_saturation_data,unique_normal_TERT_muts,on='rel_pos',how='outer')
+    extended_saturation_data = pd.merge(saturation_data,unique_normal_TERT_muts,on='rel_pos',how='outer')
     extended_saturation_data[['count','value']] = extended_saturation_data[['count','value']].fillna(0)
     draw_continuous_line(ax_saturation, extended_saturation_data, 'value', color_def)
     ylabel_saturation = 'Experimental\nimpact'
@@ -277,7 +268,7 @@ def plot_TERT_panel(figure_output_dir,
     tidy_axis_needleplot(ax_tumor, ylabel_tumor, 700, 25, min_TERT_site, max_TERT_site, inverted=True)
     ax_tumor.set_xlabel('TERT_promoter sites')
 
-    site_saturation = pd.merge(filtered_saturation_data,site_selection_data_format,on=['chr','pos','ref', 'alt','rel_pos'],how='left')
+    site_saturation = pd.merge(saturation_data,site_selection_data_format,on=['chr','pos','ref', 'alt','rel_pos'], how='left')
 
     site_saturation['p_value'] = site_saturation['p_value'].fillna(1)
     site_saturation['site_selection'] = site_saturation['site_selection'].fillna(0)
@@ -297,7 +288,7 @@ def plot_TERT_panel(figure_output_dir,
                                                 f"Significant\n(N={site_saturation[site_saturation['category_count'] == 'Significant'].shape[0]})"])
 
     #Draw panel with scatterplot of site selection vs saturation
-    draw_scatter(ax_scatter, site_selection_data_format, filtered_saturation_data, color_def)
+    draw_scatter(ax_scatter, site_selection_data_format, saturation_data, color_def)
     xlabel_scatter = 'Experimental\nimpact'
     ylabel_scatter = 'Site selection'
     tidy_axis_scatterplot(ax_scatter, xlabel_scatter, ylabel_scatter)
@@ -311,7 +302,11 @@ def main(normal_path, filter_saturation, processed_data_dir, figure_output_dir):
 
 
     #Processed data files
-    saturation_file = os.path.join(processed_data_dir,'TERT_saturation_mutagenesis_data.tsv')
+    saturation_file = f"{input_data_dir}/TERT_merged_data.tsv"
+
+    # complete_file = f"{input_data_dir}/TERT_merged_data.tsv"
+    # all_TERT_data = pd.read_table(complete_file)
+    # all_TERT_data['rel_pos'] = all_TERT_data.apply(convert_relative_position,args=(TERT_gene_TSS,),axis=1)
 
     #Sample sizes
     metadata = {'total_hartwig': 5582,
@@ -341,14 +336,17 @@ def main(normal_path, filter_saturation, processed_data_dir, figure_output_dir):
     normal_TERT_muts = process_normal_TERT_mutations(normal_path, TERT_info_38)
 
     #Fetch tumor data
-    unique_tumor_TERT_muts = pd.read_table(f"{processed_data_dir}/TERT_aggregated_data.tsv")
+    unique_tumor_TERT_muts = pd.read_table(f"{input_data_dir}/TERT_merged_data.tsv")[["pos", "count_WGS_tumor"]]
+    unique_tumor_TERT_muts.columns = ["pos", "count"]
+    unique_tumor_TERT_muts = unique_tumor_TERT_muts[unique_tumor_TERT_muts["count"]>0].reset_index(drop = True)
 
     #Fetch saturation data
     saturation_data = fetch_saturation_data(saturation_file)
     saturation_data['rel_pos'] = saturation_data.apply(convert_relative_position,args=(TERT_gene_TSS,),axis=1)
 
-    if filter_saturation == '1':
-        saturation_data = saturation_data[saturation_data['p']<1e-5]
+    # if filter_saturation == '1':
+    #     saturation_data = saturation_data[saturation_data['p']<1e-5]
+
 
     #Fetch site_selection data
     site_selection_data = process_site_selection(normal_path)
@@ -395,6 +393,8 @@ if __name__ == '__main__':
 
     #Directory with processed data files needed to build the plots
     processed_data_dir = './data'
+
+    input_data_dir = '../../data/tert_data'
 
     #Directory to write figure file
     figure_output_dir = './plots'
