@@ -34,30 +34,39 @@ def add_age_triangle(ax, width, add_text = False):
 
 def add_legend_patch(ax, heatmap_config):
     x_offset = 1.02  # slight right of the plot
-    y_center = 0.95   # halfway up the plot
+    y_center = 0.95  # top of the legend area
     
-    # Draw the two stacked boxes
+    # Box height
     rect_height = 0.03
-    ax.add_patch(patches.Rectangle((x_offset, y_center + rect_height/2), 0.05, rect_height, clip_on = False,
-                                   transform=ax.transAxes, fill=True, facecolor = "#C6D2EA", edgecolor='black', linewidth=0.3))
-    ax.text(x_offset + rect_height-0.005, y_center + rect_height, "N",
-        transform=ax.transAxes,
-        ha='center', va='center',
-        fontsize=10,
-        color='black', clip_on=False)
-    ax.add_patch(patches.Rectangle((x_offset, y_center - rect_height/2), 0.05, rect_height, clip_on = False,
-                                   transform=ax.transAxes, fill=True, facecolor = "#C6D2EA", edgecolor='black', linewidth=0.3))
-    ax.text(x_offset + rect_height-0.005, y_center, "N",
-        transform=ax.transAxes,
-        ha='center', va='center',
-        fontsize=10,
-        color='black', clip_on=False)
+
+    # Draw the two stacked boxes
+    ax.add_patch(patches.Rectangle((x_offset, y_center + rect_height/2), 0.05, rect_height, clip_on=False,
+                                   transform=ax.transAxes, fill=True, facecolor="#C6D2EA", edgecolor='black', linewidth=0.3))
+    ax.text(x_offset + rect_height - 0.005, y_center + rect_height, "N",
+            transform=ax.transAxes,
+            ha='center', va='center',
+            fontsize=10,
+            color='black', clip_on=False)
     
-    # Add text labels
+    ax.add_patch(patches.Rectangle((x_offset, y_center - rect_height/2), 0.05, rect_height, clip_on=False,
+                                   transform=ax.transAxes, fill=True, facecolor="#C6D2EA", edgecolor='black', linewidth=0.3))
+    ax.text(x_offset + rect_height - 0.005, y_center, "N",
+            transform=ax.transAxes,
+            ha='center', va='center',
+            fontsize=10,
+            color='black', clip_on=False)
+
+    # Add text labels for the rectangles
     ax.text(x_offset + 0.06, y_center + rect_height/2, "Driver SNVs",
             transform=ax.transAxes, va='bottom', ha='left', fontsize=10)
-    ax.text(x_offset + 0.06, y_center+0.01, "Protein-affecting\nindels",
+    ax.text(x_offset + 0.06, y_center + 0.01, "Protein-affecting\nindels",
             transform=ax.transAxes, va='top', ha='left', fontsize=10)
+
+    # Add black dot and label for "Donor with 2 samples"
+    dot_y = y_center - 0.1  # place below the boxes
+    ax.plot(x_offset + 0.015, dot_y, 'o', transform=ax.transAxes, color='black', markersize=4, clip_on=False)
+    ax.text(x_offset + 0.03, dot_y, "Donor with 2 samples",
+            transform=ax.transAxes, va='center', ha='left', fontsize=10, clip_on=False)
 
 def add_dots_below_xticks(ax, dot_samples, offset = 27.5, size = 4, color = "black"):
     """
