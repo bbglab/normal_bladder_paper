@@ -3,6 +3,7 @@ import pandas as pd
 import os
 
 import seaborn as sns
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 
@@ -55,14 +56,14 @@ def significance_groups(r, threshold=1e-5):
 
 def process_normal_TERT_mutations(normal_path, TERT_info_38):
     normal_muts = pd.read_csv(os.path.join(normal_path + '/clean_somatic',
-                                           'all_samples.somatic.mutations.tsv'),
-                              sep='\t')
+                                            'all_samples.somatic.mutations.tsv'),
+                                sep='\t')
     normal_muts = normal_muts[['CHROM','POS','REF','ALT','ALT_DEPTH','VAF','SAMPLE_ID', "TYPE"]]
     normal_TERT_muts = normal_muts[(normal_muts['CHROM']==('chr' + TERT_info_38['chr'])) &
-                                   (normal_muts['POS'] >= int(TERT_info_38['start'])) &
-                                   (normal_muts['POS'] <= int(TERT_info_38['end'])) &
-                                   (normal_muts['TYPE'] == 'SNV')
-                                   ]
+                                    (normal_muts['POS'] >= int(TERT_info_38['start'])) &
+                                    (normal_muts['POS'] <= int(TERT_info_38['end'])) &
+                                    (normal_muts['TYPE'] == 'SNV')
+                                    ]
     normal_TERT_muts = normal_TERT_muts.drop('TYPE', axis = 1)
     return normal_TERT_muts.rename(columns={'CHROM':'chr',
                                             'POS':'pos',
@@ -73,14 +74,14 @@ def process_normal_TERT_mutations(normal_path, TERT_info_38):
 
 def process_site_selection(normal_path):
     site_selection = pd.read_csv(os.path.join(normal_path + '/sitecomparisongloballoc',
-                                           'all_samples.global_loc.site.comparison.tsv.gz'),
-                                 sep='\t')
+                                            'all_samples.global_loc.site.comparison.tsv.gz'),
+                                    sep='\t')
     site_selection = site_selection[site_selection['GENE']=='TERTpromoter']
     site_selection = site_selection[['CHROM','POS','REF','ALT','OBS/EXP','p_value']].rename(columns={'CHROM':'chr',
-                                                                                           'POS':'pos',
-                                                                                           'REF':'ref',
-                                                                                           'ALT':'alt',
-                                                                                           'OBS/EXP':'site_selection'})
+                                                                                            'POS':'pos',
+                                                                                            'REF':'ref',
+                                                                                            'ALT':'alt',
+                                                                                            'OBS/EXP':'site_selection'})
     return site_selection
 
 def convert_relative_position(r, TERT_gene_TSS):
@@ -105,18 +106,18 @@ def draw_needleplot(axis,muts_data,ymax,factor,color_def,inverted=False):
 def draw_site_selection(axis,data,value,color_def):
     print(data)
     axis.plot(data['rel_pos'],
-              data[value],
-              zorder=1,
-              color=color_def[value],
-              lw=1)
+                data[value],
+                zorder=1,
+                color=color_def[value],
+                lw=1)
     axis.fill_between(data['rel_pos'],
-                      0,
-                      data[value],
-                      color=color_def[value],
-                      alpha=0.4,
-                      zorder=0,
-                      lw=1.5)
-    
+                        0,
+                        data[value],
+                        color=color_def[value],
+                        alpha=0.4,
+                        zorder=0,
+                        lw=1.5)
+
     signif_data = data.copy()
 
     significant_rows = signif_data[signif_data['p_value'] < 1e-5]
@@ -166,6 +167,74 @@ def draw_stripplot(axis, data, color_def, value):
                     size=4)
 
 
+# Reusable plotting function adapted for grouped data
+def plot_half_violin_group(ax, data, x_col, y_col, group_order, palette, title, ylabel=None):
+    sns.violinplot(
+        data=data,
+        ax=ax,
+        x=x_col,
+        y=y_col,
+        hue=x_col,
+        hue_order=group_order,
+        order=group_order,
+        palette=palette,
+        inner=None,
+        linewidth=0,
+        bw=0.2,
+        cut=0,
+        density_norm='width',
+        zorder = 1
+    )
+
+    ymin, ymax = ax.get_ylim()
+
+    # Cover left half
+    for i, group in enumerate(group_order):
+        ax.add_patch(plt.Rectangle((i - 0.41, ymin), 0.39, ymax - ymin, color='white', zorder=2))
+
+    x_offset = -0.25  # fixed offset if you want all dots shifted
+    jitter_width = 0.1  # match seaborn's jitter
+    dot_size = 20
+
+    for i, group in enumerate(group_order):
+        group_data = data[data[x_col] == group]
+        print(group_data.shape)
+        y_vals = group_data[y_col]
+        # x_vals = [i + x_offset] * len(y_vals)# + np.random.uniform(-jitter_width, jitter_width, size=len(y_vals))
+        x_vals = i + x_offset + np.random.uniform(-jitter_width, jitter_width, size=len(y_vals))
+        ax.scatter(x_vals,
+                    y_vals,
+                color=palette[group],
+                alpha=0.6,
+                s=dot_size,
+                edgecolor='none',
+                linewidth=0,
+                label=group, zorder = 3)
+
+    ax.set_xlabel('')
+    ax.set_title(title, fontsize=10)
+    ax.spines[['top', 'right']].set_visible(False)
+    ax.legend([], [], frameon=False)
+
+
+def draw_stripplot_half_violin(axis, data, color_def, value):
+
+    group_order = ['Not observed', 'Not significant', 'Significant']
+    custom_palette = dict(zip(group_order, color_def['palette_' + value]))
+    plot_half_violin_group(axis, data, 'category_count', value, group_order, custom_palette, '', ylabel='Experimental\nfunctional impact')
+
+    # data = data.sort_values('category_count',ascending=True)
+    # sns.stripplot(data,
+    #                 x='category_count',
+    #                 y=value,
+    #                 ax=axis,
+    #                 jitter=0.1,
+    #                 hue='category_count',
+    #                 palette=color_def['palette_' + value],
+    #                 alpha = 0.7,
+    #                 size=4)
+
+
 def draw_scatter(axis_left,site_selection_data,saturation_data,color_def):
     selection_saturation = pd.merge(site_selection_data, saturation_data, on=['pos','rel_pos','ref','alt'], how = 'inner')
     sns.scatterplot(selection_saturation,
@@ -178,8 +247,8 @@ def draw_scatter(axis_left,site_selection_data,saturation_data,color_def):
 def tidy_axis_needleplot(axis, ylabel, ylimit, factor, xmin, xmax, inverted=False):
     if inverted:
         axis.spines[['right']].set_visible(False)
-        axis.set_yticklabels(range(ylimit,-100,-100))
-        axis.tick_params(axis='both', labelsize=5)
+        axis.set_yticks(range(ylimit,-100,-200))
+        axis.set_yticklabels(range(ylimit-100,-100,-200)[::-1])
         axis.set_ylim([0,ylimit+ylimit/factor])
         # axis.vlines(0, 0, ylimit + ylimit / factor, colors='gray', linestyles='dashed', linewidth=1)
     else:
@@ -189,30 +258,30 @@ def tidy_axis_needleplot(axis, ylabel, ylimit, factor, xmin, xmax, inverted=Fals
 
     axis.set_xlim([xmin, xmax])
     axis.set_ylabel(ylabel, fontsize=8, rotation=0, horizontalalignment='right',verticalalignment='center')
-    axis.tick_params(axis='both', labelsize=5)
+    axis.tick_params(axis='both', labelsize=6)
 
 
 
 def tidy_axis_continuous(axis, ylabel, ymin, ymax):
     axis.spines[['top','right']].set_visible(False)
     axis.set_ylabel(ylabel, fontsize=8, rotation=0, horizontalalignment='right',verticalalignment='center')
-    axis.tick_params(axis='both', labelsize=5)
+    axis.tick_params(axis='both', labelsize=6)
     axis.set_ylim([ymin,ymax])
     # axis.vlines(0,ymin,ymax,colors='gray', linestyles='dashed', linewidth=1)
     # axis.set_yscale('log')
 
 def tidy_axis_stripplot(axis, xlabel, ylabel):
     axis.spines[['top','right']].set_visible(False)
-    axis.set_ylabel(ylabel, fontsize=6)
-    axis.set_xlabel(xlabel, fontsize=6)
-    axis.tick_params(axis='x', labelsize=5)
-    axis.tick_params(axis='y', labelsize=5)
+    axis.set_ylabel(ylabel, fontsize=8)
+    axis.set_xlabel(xlabel, fontsize=8)
+    axis.tick_params(axis='x', labelsize=6)
+    axis.tick_params(axis='y', labelsize=6)
 
 def tidy_axis_scatterplot(axis, xlabel, ylabel):
     axis.spines[['top','right']].set_visible(False)
-    axis.set_ylabel(ylabel, fontsize=6)
-    axis.set_xlabel(xlabel, fontsize=6)
-    axis.tick_params(axis='both', labelsize=5)
+    axis.set_ylabel(ylabel, fontsize=8)
+    axis.set_xlabel(xlabel, fontsize=8)
+    axis.tick_params(axis='both', labelsize=6)
 
 def plot_TERT_panel(figure_output_dir,
                     unique_normal_TERT_muts,
@@ -259,7 +328,7 @@ def plot_TERT_panel(figure_output_dir,
     extended_saturation_data = pd.merge(saturation_data,unique_normal_TERT_muts,on='rel_pos',how='outer')
     extended_saturation_data[['count','value']] = extended_saturation_data[['count','value']].fillna(0)
     draw_continuous_line(ax_saturation, extended_saturation_data, 'value', color_def)
-    ylabel_saturation = 'Experimental\nimpact'
+    ylabel_saturation = 'Experimental\nfunctional\nimpact'
     tidy_axis_continuous(ax_saturation, ylabel_saturation, extended_saturation_data['value'].min()-0.5,extended_saturation_data['value'].max()+0.5)
 
     #Draw panel with needleplot of mutations in tumors
@@ -276,20 +345,21 @@ def plot_TERT_panel(figure_output_dir,
     site_saturation['category_count'] = site_saturation.apply(significance_groups,axis=1)
 
     # draw_stripplot(ax_stripplot_site_selection, site_selection_normal, color_def,'site_selection')
-    draw_stripplot(ax_stripplot_saturation, site_saturation, color_def,'value')
+    # draw_stripplot(ax_stripplot_saturation, site_saturation, color_def,'value')
+    draw_stripplot_half_violin(ax_stripplot_saturation, site_saturation, color_def,'value')
 
-    xlabel_strip = 'Normal recurrence'
-    ylabel_strip_saturation = 'Experimental\nimpact'
+    xlabel_strip = ''
+    ylabel_strip_saturation = 'Experimental\nfunctional impact'
 
     tidy_axis_stripplot(ax_stripplot_saturation, xlabel_strip, ylabel_strip_saturation)
 
-    ax_stripplot_saturation.set_xticklabels([f"Not observed\n(N={site_saturation[site_saturation['category_count'] == 'Not observed'].shape[0]})",
+    ax_stripplot_saturation.set_xticklabels([f"Not\nobserved\n(N={site_saturation[site_saturation['category_count'] == 'Not observed'].shape[0]})",
                                                 f"Not\nsignificant\n(N={site_saturation[site_saturation['category_count'] == 'Not significant'].shape[0]})",
                                                 f"Significant\n(N={site_saturation[site_saturation['category_count'] == 'Significant'].shape[0]})"])
 
     #Draw panel with scatterplot of site selection vs saturation
     draw_scatter(ax_scatter, site_selection_data_format, saturation_data, color_def)
-    xlabel_scatter = 'Experimental\nimpact'
+    xlabel_scatter = 'Experimental\nfunctional impact'
     ylabel_scatter = 'Site selection'
     tidy_axis_scatterplot(ax_scatter, xlabel_scatter, ylabel_scatter)
 
