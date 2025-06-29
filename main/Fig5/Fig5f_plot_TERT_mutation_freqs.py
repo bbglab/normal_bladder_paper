@@ -5,6 +5,8 @@ import os
 import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.rcParams['pdf.fonttype']=42
 from matplotlib.gridspec import GridSpec
 
 sys.path.append('../../')
@@ -333,7 +335,7 @@ def plot_TERT_panel(figure_output_dir,
 
     #Draw panel with needleplot of mutations in tumors
     draw_needleplot(ax_tumor, unique_tumor_TERT_muts, 700, 25, color_def, inverted=True)
-    ylabel_tumor = 'Mutations\nin tumors\n(N=' + str(metadata['total_tumors']) + ')'
+    ylabel_tumor = f'Mutations\nin tumors\n(N={metadata["total_tumors"]:,})'
     tidy_axis_needleplot(ax_tumor, ylabel_tumor, 700, 25, min_TERT_site, max_TERT_site, inverted=True)
     ax_tumor.set_xlabel('TERT_promoter sites')
 
@@ -341,11 +343,8 @@ def plot_TERT_panel(figure_output_dir,
 
     site_saturation['p_value'] = site_saturation['p_value'].fillna(1)
     site_saturation['site_selection'] = site_saturation['site_selection'].fillna(0)
-    # site_saturation['category_count'] = site_saturation.apply(categorize_normal_mutations_counts,axis=1)
     site_saturation['category_count'] = site_saturation.apply(significance_groups,axis=1)
 
-    # draw_stripplot(ax_stripplot_site_selection, site_selection_normal, color_def,'site_selection')
-    # draw_stripplot(ax_stripplot_saturation, site_saturation, color_def,'value')
     draw_stripplot_half_violin(ax_stripplot_saturation, site_saturation, color_def,'value')
 
     xlabel_strip = ''
@@ -353,9 +352,9 @@ def plot_TERT_panel(figure_output_dir,
 
     tidy_axis_stripplot(ax_stripplot_saturation, xlabel_strip, ylabel_strip_saturation)
 
-    ax_stripplot_saturation.set_xticklabels([f"Not\nobserved\n(N={site_saturation[site_saturation['category_count'] == 'Not observed'].shape[0]})",
-                                                f"Not\nsignificant\n(N={site_saturation[site_saturation['category_count'] == 'Not significant'].shape[0]})",
-                                                f"Significant\n(N={site_saturation[site_saturation['category_count'] == 'Significant'].shape[0]})"])
+    ax_stripplot_saturation.set_xticklabels([f"Not\nobserved\n(N={site_saturation[site_saturation['category_count'] == 'Not observed'].shape[0]:,})",
+                                                f"Not\nsignificant\n(N={site_saturation[site_saturation['category_count'] == 'Not significant'].shape[0]:,})",
+                                                f"Significant\n(N={site_saturation[site_saturation['category_count'] == 'Significant'].shape[0]:,})"])
 
     #Draw panel with scatterplot of site selection vs saturation
     draw_scatter(ax_scatter, site_selection_data_format, saturation_data, color_def)
@@ -368,15 +367,11 @@ def plot_TERT_panel(figure_output_dir,
     plt.savefig(figure_output_file,dpi=300)
 
 
-def main(normal_path, filter_saturation, processed_data_dir, figure_output_dir):
+def main(normal_path, figure_output_dir):
 
 
     #Processed data files
     saturation_file = f"{input_data_dir}/TERT_merged_data.tsv"
-
-    # complete_file = f"{input_data_dir}/TERT_merged_data.tsv"
-    # all_TERT_data = pd.read_table(complete_file)
-    # all_TERT_data['rel_pos'] = all_TERT_data.apply(convert_relative_position,args=(TERT_gene_TSS,),axis=1)
 
     #Sample sizes
     metadata = {'total_hartwig': 5582,
@@ -413,9 +408,6 @@ def main(normal_path, filter_saturation, processed_data_dir, figure_output_dir):
     #Fetch saturation data
     saturation_data = fetch_saturation_data(saturation_file)
     saturation_data['rel_pos'] = saturation_data.apply(convert_relative_position,args=(TERT_gene_TSS,),axis=1)
-
-    # if filter_saturation == '1':
-    #     saturation_data = saturation_data[saturation_data['p']<1e-5]
 
 
     #Fetch site_selection data
@@ -461,14 +453,9 @@ def main(normal_path, filter_saturation, processed_data_dir, figure_output_dir):
 
 if __name__ == '__main__':
 
-    #Directory with processed data files needed to build the plots
-    processed_data_dir = './data'
-
     input_data_dir = '../../data/tert_data'
 
     #Directory to write figure file
     figure_output_dir = './plots'
 
-    filter_saturation = 0
-
-    main(deepcsa_run_dir, filter_saturation, processed_data_dir, figure_output_dir)
+    main(deepcsa_run_dir, figure_output_dir)
