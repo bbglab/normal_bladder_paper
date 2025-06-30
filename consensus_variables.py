@@ -1,5 +1,12 @@
 import json
+import matplotlib as mpl
 
+mpl.rcParams.update({
+    'font.family': 'Arial',            # Enforce Arial
+    'pdf.fonttype': 42,                # TrueType for PDF
+    'ps.fonttype': 42,                 # TrueType for PS/EPS
+    'svg.fonttype': 'none',            # Keep text as editable text
+})
 
 
 def load_samples_info(rundir):
@@ -299,3 +306,20 @@ plots_general_config = {
                         "dot_edgethres_coeffplot": 0.2,
                         "dot_edgewidth_coeffplot": 1.5
                         }
+
+plot_fontsizes_general_config = {
+                                 "tick_labels_fontsize"     : 5,
+                                 "legend_labels_fontsize"   : 5,
+                                 "axis_labels_fontsize"     : 6,
+                                 "title_fontsize"           : 7,
+                                 "custom_text_fontsize"     : 5,
+}
+
+mpl.rcParams.update({
+    'axes.titlesize': plot_fontsizes_general_config["title_fontsize"],        # Title font size
+    'axes.labelsize': plot_fontsizes_general_config["axis_labels_fontsize"],        # X and Y axis labels
+    'xtick.labelsize': plot_fontsizes_general_config["tick_labels_fontsize"],       # X tick labels
+    'ytick.labelsize': plot_fontsizes_general_config["tick_labels_fontsize"],       # Y tick labels
+    'legend.fontsize': plot_fontsizes_general_config["legend_labels_fontsize"],       # Legend text
+    'figure.titlesize': plot_fontsizes_general_config["title_fontsize"],      # Figure suptitle (if used)
+})
