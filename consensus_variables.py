@@ -287,6 +287,15 @@ metrics_colors_dictionary = {"ofml"        : "viridis_r",
                             }
 # plot configs
 plots_general_config = {
+
+                        # fonsizes
+                        "ylabel_fontsize": 6,
+                        "xlabel_fontsize": 6,
+                        "title_fontsize": 7,
+                        "xyticks_fontsize": 5,
+                        "legend_fontsize": 5,
+                        "annots_fontsize": 5,
+
                         "dot_size_scplot": 40,
                         "dot_size_coeffplot": 70,
                         "dot_sizebelow_coeffplot": 40,
@@ -296,3 +305,4 @@ plots_general_config = {
                         "dot_edgethres_coeffplot": 0.2,
                         "dot_edgewidth_coeffplot": 1.5
                         }
+
