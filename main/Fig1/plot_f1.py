@@ -216,11 +216,13 @@ def cohort_descrp_plot(data_df, save_file, plot_config = {}):
 
 def plot_mut_count_comparison(df_count,
                             figsize=(5, 4),
-                            color="#E0E0E0",
+                            barcolor="#E0E0E0",
                             save=False,
                             filename=None):
 
-    pivoted = df_count.pivot(index="Gene", columns="Type", values="SNVs").fillna(0)
+    pivoted = df_count.pivot(index="Gene", 
+                            columns="Type", 
+                            values="SNVs").fillna(0)
     pivoted = pivoted.sort_values(by="Cancer", ascending=True)
 
     fig, (ax_left, ax_right) = plt.subplots(
@@ -228,10 +230,11 @@ def plot_mut_count_comparison(df_count,
     )
 
     # Barplots
-    bars_left = ax_left.barh(pivoted.index, pivoted["Normal"], color="#E0E0E0")
-    bars_right = ax_right.barh(pivoted.index, pivoted["Cancer"], color="#E0E0E0")
+    bars_left = ax_left.barh(pivoted.index, pivoted["Normal"], color=barcolor)
+    bars_right = ax_right.barh(pivoted.index, pivoted["Cancer"], color=barcolor)
     ax_left.invert_xaxis() 
-    ax_left.tick_params(axis="y", labelleft=False, labelright=True, pad=35)
+    ax_left.tick_params(axis="y", labelleft=False, labelright=True, pad=14,
+                        labelsize = plots_general_config["yticks_fontsize"])
 
     # Add values to the bars
     for bar in bars_left:
@@ -241,7 +244,7 @@ def plot_mut_count_comparison(df_count,
             f'{int(bar.get_width())}',
             va='center', 
             ha='right',  
-            fontsize=8,
+            fontsize=plots_general_config["annots_fontsize"],
             color="black"
         )
     for bar in bars_right:
@@ -251,7 +254,7 @@ def plot_mut_count_comparison(df_count,
             f'{int(bar.get_width())}',  
             va='center',  
             ha='left',  
-            fontsize=8,
+            fontsize=plots_general_config["annots_fontsize"],
             color="black"
         )
 
@@ -260,8 +263,10 @@ def plot_mut_count_comparison(df_count,
         tick.set_horizontalalignment('center')
         
     ax_left.tick_params(left=False, right=True)
-    ax_left.set_xlabel("Number of mutations")
-    ax_right.set_xlabel("Number of mutations")
+    ax_left.tick_params(axis="x", labelsize=plots_general_config["xticks_fontsize"])
+    ax_right.tick_params(axis="x", labelsize=plots_general_config["xticks_fontsize"])
+    ax_left.set_xlabel("Number of SNVs", fontsize = plots_general_config["xlabel_fontsize"])
+    ax_right.set_xlabel("Number of SNVs", fontsize = plots_general_config["xlabel_fontsize"])
     ax_right.set_xlim([0, pivoted["Normal"].max()])
 
     ax_left.spines['left'].set_visible(False)
@@ -269,15 +274,14 @@ def plot_mut_count_comparison(df_count,
     ax_right.spines['top'].set_visible(False)
     ax_right.spines['right'].set_visible(False)
 
-    # ax_left.set_title(f"$\\mathbf{{Normal\\ bladder}}$\n{pivoted['Normal'].sum():,}", fontsize=10)
-    # ax_right.set_title(f"$\\mathbf{{Bladder\\ tumors}}$\n{pivoted['Cancer'].sum():,}", fontsize=10)
-    ax_left.set_title(f"$\\mathbf{{Normal\\ bladder}}$\nDonors: 45", fontsize=10)
-    ax_right.set_title(f"$\\mathbf{{Bladder\\ cancer}}$\nTumors: 892", fontsize=10)
-    plt.tight_layout()
+    ax_left.set_title(f"$\\mathbf{{Normal\\ bladder}}$\nDonors: 45", fontsize=plots_general_config["xlabel_fontsize"])
+    ax_right.set_title(f"$\\mathbf{{Bladder\\ cancer}}$\nTumors: 892", fontsize=plots_general_config["xlabel_fontsize"])
     
+    # plt.tight_layout()
+    fig.subplots_adjust(wspace=0.5)
+
     if save and filename is not None:
-        fig.savefig(filename, dpi=300, bbox_inches='tight')
-    plt.show()
+        fig.savefig(filename, dpi=300, bbox_inches='tight', transparent=True)
 
 def plot_signature(profile_df, ax, ttype = "Frequency", add_contexts = False, text = None, textloc_x = 1,
                 fontfactor = 0, ylabel = ""):

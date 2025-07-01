@@ -204,13 +204,13 @@ def get_cancer_maf_all(cohort_df, path_all_vep_out, lst_genes = None):
     filters out mutations that are not protein coding
     """
     
-    # iterate through intogen cohorts and load VEP annotated
+    # iterate through intogen cohorts and load VEP annotated MAF
     lst_vep_out = []
     for cohort, ttype in cohort_df[["COHORT", "CANCER_TYPE"]].values:
         path_vep = f"{path_all_vep_out}/{cohort}.tsv.gz"
         if os.path.exists(path_vep):
 
-            vep_cohort = get_cancer_maf_cohort(path_vep, lst_genes, only_protein_pos)
+            vep_cohort = get_cancer_maf_cohort(path_vep, lst_genes)
             vep_cohort["Cohort"] = cohort
             vep_cohort["Cancer_type"] = ttype
             lst_vep_out.append(vep_cohort)
@@ -219,16 +219,11 @@ def get_cancer_maf_all(cohort_df, path_all_vep_out, lst_genes = None):
     
     df = pd.concat(lst_vep_out).reset_index(drop=True)
     
-    # Ensure that all indels (including frameshift) are mapped to indels and not nonsense
-    df["INDEL_INFRAME"] = False
-    df.loc[(df["Consequence"] == 'inframe_insertion') | (df["Consequence"] == 'inframe_deletion'), "INDEL_INFRAME"] = True
-    
-    # FIXME
-    # this redefinition here looks dangerous to me
+    # rename frameshift variants to indel
     df["Consequence"] = df["Consequence"].replace("frameshift_variant", "inframe_insertion") 
     df["Consequence"] = get_broad_consequence(df["Consequence"])
     
-    # Parse DNA location
+    # parse DNA location
     df["Chr"] = df.Location.apply(lambda x: f'chr{x.split(":")[0]}')
     df["Location"] = df.Location.apply(lambda x: x.split(":")[1])
     df["DNA_pos"] = df.Location.apply(lambda x: int(x.split("-")[0]))
