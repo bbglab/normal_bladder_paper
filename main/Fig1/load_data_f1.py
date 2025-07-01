@@ -173,7 +173,7 @@ def load_cohort_data(clinvars_file, muts_file, mutrate_file):
 
     return cohort_df
 
-def get_cancer_maf_cohort(path_vep_out, lst_genes = None, only_protein_pos = True):
+def get_cancer_maf_cohort(path_vep_out, lst_genes = None):
     """
     Gets SNVs and indels from a VEP annotated MAF file for
     a specific set of genes. If only_protein_pos = True,
@@ -188,10 +188,6 @@ def get_cancer_maf_cohort(path_vep_out, lst_genes = None, only_protein_pos = Tru
     if lst_genes is not None:
         vep_cohort = vep_cohort[vep_cohort["SYMBOL"].isin(lst_genes)]
     vep_cohort = vep_cohort[vep_cohort["SYMBOL"] != "-"].reset_index(drop=True)
-    
-    # discard mutations not affecting the coding sequence (if applicable)
-    if only_protein_pos:
-        vep_cohort = vep_cohort[vep_cohort["Protein_position"] != "-"].reset_index(drop=True)
         
     cols = ["SYMBOL", "Feature", "Location", "Protein_position", "Consequence"]
     vep_cohort = vep_cohort[cols].rename(columns={"SYMBOL" : "Gene", 
@@ -200,7 +196,7 @@ def get_cancer_maf_cohort(path_vep_out, lst_genes = None, only_protein_pos = Tru
     
     return vep_cohort
 
-def get_cancer_maf_all(cohort_df, path_all_vep_out, lst_genes = None, only_protein_pos = True):
+def get_cancer_maf_all(cohort_df, path_all_vep_out, lst_genes = None):
     """
     Gets SNVs and indels from VEP files
     of a set of IntoGen cohorts. Keeps only
@@ -222,15 +218,6 @@ def get_cancer_maf_all(cohort_df, path_all_vep_out, lst_genes = None, only_prote
             print(f"Path {path_vep} doesn't exist: Skipping..")
     
     df = pd.concat(lst_vep_out).reset_index(drop=True)
-
-    # discard mutations not affecting the coding sequence again (if applicable)
-    df["Pos"] = df["Pos"].apply(lambda x: 
-                        int(x) if len(x.split("-")) == 1 else 
-                        np.nan if (x.split("-")[0] == "?" or x.split("-")[0] == "") 
-                        else int(x.split("-")[0]))
-    if only_protein_pos:
-        df = df.dropna(subset="Pos").reset_index(drop=True)
-        df.Pos= df.Pos.astype(int)
     
     # Ensure that all indels (including frameshift) are mapped to indels and not nonsense
     df["INDEL_INFRAME"] = False
@@ -268,17 +255,11 @@ def get_normal_maf(path_maf, lst_genes, only_protein_pos = True):
                     ].reset_index(drop = True)
     print(f"\tSNVs and indels: {len(maf_df_f)}")
     
-    # discard mutations not affecting the coding sequence (if applicable)
-    if only_protein_pos:
-        maf_df_f = maf_df_f[ maf_df_f["canonical_Protein_position"] != '-' ]
-        print(maf_df_f.shape, 'after filtering for mutations without Protein position')
-    
     # rename some consequence types
     maf_df_f.loc[(maf_df_f["TYPE"].isin(["INSERTION", "DELETION"])), "canonical_Consequence_broader"] = "indel"
     maf_df_f["canonical_Consequence_broader"] = maf_df_f["canonical_Consequence_broader"].replace("splice_region_variant", "splicing")
     maf_df_f["canonical_Consequence_broader"] = maf_df_f["canonical_Consequence_broader"].replace("essential_splice", "splicing")
     
-    # discard mutations not affecting the coding sequence again (if applicable)
     cols = ["canonical_SYMBOL", "canonical_Feature", "canonical_Protein_position",
             "canonical_Consequence_broader", "CHROM", "POS", "DEPTH", "ALT_DEPTH"]
     maf_df_f = maf_df_f[cols].rename(columns={"canonical_SYMBOL" : "Gene", 
@@ -287,13 +268,5 @@ def get_normal_maf(path_maf, lst_genes, only_protein_pos = True):
                                             "canonical_Consequence_broader" : "Consequence",
                                             "CHROM" : "CHR",
                                             "POS" : "DNA_POS"})
-
-    maf_df_f["Pos"] = maf_df_f["Pos"].apply(lambda x: 
-                                    int(x) if len(x.split("-")) == 1 else 
-                                    np.nan if (x.split("-")[0] == "?" or x.split("-")[0] == "") 
-                                    else int(x.split("-")[0]))
-    if only_protein_pos:
-        maf_df_f = maf_df_f.dropna(subset=["Pos"]).reset_index(drop=True)
-        maf_df_f.Pos= maf_df_f["Pos"].astype(int)
     
     return maf_df_f
