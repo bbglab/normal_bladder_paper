@@ -5,13 +5,11 @@ import os
 import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib
-matplotlib.rcParams['pdf.fonttype']=42
 from matplotlib.gridspec import GridSpec
 
 sys.path.append('../../')
 
-from consensus_variables import deepcsa_run_dir
+from consensus_variables import *
 
 
 def convert_pyrimidines(ref, alt, pyrimidine_ref, pyrimidine_alt):
@@ -97,12 +95,12 @@ def fetch_saturation_data(saturation_file):
 def draw_needleplot(axis,muts_data,ymax,factor,color_def,inverted=False):
     if inverted:
         axis.vlines(muts_data['rel_pos'], ymin=ymax-muts_data['count'], ymax=ymax+ymax/factor, lw=1, zorder=1, alpha=0.5,color='black')
-        axis.scatter(muts_data['rel_pos'], ymax-muts_data['count'], color='white', zorder=3, lw=1, ec="white", s=25)
-        axis.scatter(muts_data['rel_pos'].values, ymax-muts_data['count'].values, zorder=4,alpha=0.7, lw=0.1, ec="black", s=30, color=color_def['needle_point_count'])
+        axis.scatter(muts_data['rel_pos'], ymax-muts_data['count'], color='white', zorder=3, lw=1, ec="none", s=20)
+        axis.scatter(muts_data['rel_pos'].values, ymax-muts_data['count'].values, zorder=4,alpha=0.7, lw=0.1, ec="none", s=20, color=color_def['needle_point_count'])
     else:
         axis.vlines(muts_data['rel_pos'], ymin=0-ymax/factor, ymax=muts_data['count'], lw=1, zorder=1, alpha=0.5,color='black')
-        axis.scatter(muts_data['rel_pos'], muts_data['count'], color='white', zorder=3, lw=1, ec="white", s=25)
-        axis.scatter(muts_data['rel_pos'].values, muts_data['count'].values, zorder=4,alpha=0.7, lw=0.1, ec="black", s=30, color=color_def['needle_point_count'])
+        axis.scatter(muts_data['rel_pos'], muts_data['count'], color='white', zorder=3, lw=1, ec="none", s=20)
+        axis.scatter(muts_data['rel_pos'].values, muts_data['count'].values, zorder=4,alpha=0.7, lw=0.1, ec="none", s=20, color=color_def['needle_point_count'])
 
 
 def draw_site_selection(axis,data,value,color_def):
@@ -111,14 +109,14 @@ def draw_site_selection(axis,data,value,color_def):
                 data[value],
                 zorder=1,
                 color=color_def[value],
-                lw=1)
+                lw=0.5)
     axis.fill_between(data['rel_pos'],
                         0,
                         data[value],
                         color=color_def[value],
                         alpha=0.4,
                         zorder=0,
-                        lw=1.5)
+                        lw=0.5)
 
     signif_data = data.copy()
 
@@ -137,7 +135,7 @@ def draw_site_selection(axis,data,value,color_def):
                       color='blue',#color_def[value],
                       alpha=1,
                       zorder=2,
-                      lw=1.5)
+                      lw=1)
 
 
 
@@ -146,14 +144,14 @@ def draw_continuous_line(axis,data,value,color_def):
               data[value],
               zorder=2,
               color=color_def[value],
-              lw=1)
+              lw=0.5)
     axis.fill_between(data['rel_pos'],
                       0,
                       data[value],
                       color=color_def[value],
                       alpha=0.4,
                       zorder=0,
-                      lw=1.5)
+                      lw=0.5)
 
 
 def draw_stripplot(axis, data, color_def, value):
@@ -196,7 +194,7 @@ def plot_half_violin_group(ax, data, x_col, y_col, group_order, palette, title, 
 
     x_offset = -0.25  # fixed offset if you want all dots shifted
     jitter_width = 0.1  # match seaborn's jitter
-    dot_size = 20
+    dot_size = 10
 
     for i, group in enumerate(group_order):
         group_data = data[data[x_col] == group]
@@ -214,7 +212,7 @@ def plot_half_violin_group(ax, data, x_col, y_col, group_order, palette, title, 
                 label=group, zorder = 3)
 
     ax.set_xlabel('')
-    ax.set_title(title, fontsize=10)
+    ax.set_title(title)
     ax.spines[['top', 'right']].set_visible(False)
     ax.legend([], [], frameon=False)
 
@@ -244,7 +242,7 @@ def draw_scatter(axis_left,site_selection_data,saturation_data,color_def):
                     x='value',
                     ax=axis_left,
                     color=color_def['value'],
-                    s=30)
+                    s=10)
 
 def tidy_axis_needleplot(axis, ylabel, ylimit, factor, xmin, xmax, inverted=False):
     if inverted:
@@ -259,31 +257,31 @@ def tidy_axis_needleplot(axis, ylabel, ylimit, factor, xmin, xmax, inverted=Fals
         # axis.vlines(0, 0 - ylimit / factor, ylimit, colors='gray', linestyles='dashed', linewidth=1)
 
     axis.set_xlim([xmin, xmax])
-    axis.set_ylabel(ylabel, fontsize=8, rotation=0, horizontalalignment='right',verticalalignment='center')
-    axis.tick_params(axis='both', labelsize=6)
+    axis.set_ylabel(ylabel, rotation=0, horizontalalignment='right',verticalalignment='center')
+    # axis.tick_params(axis='both', labelsize=6)
 
 
 
 def tidy_axis_continuous(axis, ylabel, ymin, ymax):
     axis.spines[['top','right']].set_visible(False)
-    axis.set_ylabel(ylabel, fontsize=8, rotation=0, horizontalalignment='right',verticalalignment='center')
-    axis.tick_params(axis='both', labelsize=6)
+    axis.set_ylabel(ylabel, rotation=0, horizontalalignment='right',verticalalignment='center')
+    # axis.tick_params(axis='both', labelsize=6)
     axis.set_ylim([ymin,ymax])
     # axis.vlines(0,ymin,ymax,colors='gray', linestyles='dashed', linewidth=1)
     # axis.set_yscale('log')
 
 def tidy_axis_stripplot(axis, xlabel, ylabel):
     axis.spines[['top','right']].set_visible(False)
-    axis.set_ylabel(ylabel, fontsize=8)
-    axis.set_xlabel(xlabel, fontsize=8)
-    axis.tick_params(axis='x', labelsize=6)
-    axis.tick_params(axis='y', labelsize=6)
+    axis.set_ylabel(ylabel)
+    axis.set_xlabel(xlabel)
+    # axis.tick_params(axis='x', labelsize=6)
+    # axis.tick_params(axis='y', labelsize=6)
 
 def tidy_axis_scatterplot(axis, xlabel, ylabel):
     axis.spines[['top','right']].set_visible(False)
-    axis.set_ylabel(ylabel, fontsize=8)
-    axis.set_xlabel(xlabel, fontsize=8)
-    axis.tick_params(axis='both', labelsize=6)
+    axis.set_ylabel(ylabel)
+    axis.set_xlabel(xlabel)
+    # axis.tick_params(axis='both', labelsize=6)
 
 def plot_TERT_panel(figure_output_dir,
                     unique_normal_TERT_muts,
@@ -297,8 +295,8 @@ def plot_TERT_panel(figure_output_dir,
     site_selection_data_format = site_selection_data_format[['chr','pos','ref','alt','site_selection','rel_pos', 'p_value']]
     site_selection_data_format['site_selection'] = site_selection_data_format['site_selection'].fillna(0)
 
-    figure_output_file = os.path.join(figure_output_dir,'Fig5f_TERT_needleplots.png')
-    fig = plt.figure(figsize=(10, 5))
+    figure_output_file = os.path.join(figure_output_dir,'Fig5f_TERT_needleplots.pdf')
+    fig = plt.figure(figsize=(7, 3.5))
     gs = GridSpec(20, 11, figure=fig, wspace=0, hspace=0)
     ax_tumor = fig.add_subplot(gs[13:19, 0:8])
     ax_normal = fig.add_subplot(gs[0:6, 0:8], sharex=ax_tumor)
