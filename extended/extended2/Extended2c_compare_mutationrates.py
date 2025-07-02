@@ -7,7 +7,7 @@ import seaborn as sns
 import sys
 
 sys.path.append('../../')
-from consensus_variables import all_sample_names_dirty, clinvars_regr_file, deepcsa_run_dir
+from consensus_variables import *
 
 
 def produce_age(r):
@@ -66,33 +66,36 @@ def mutation_count(data,genome_length,donors_coverage):
 
 
 def plot_regression(median, mutrates, figure_output_dir, m, b):
-    figure_output_file = os.path.join(figure_output_dir, 'ExtendedFig2c_mutrate_comparison_lawson.png')
-    fig, axs = plt.subplots(1, 1, figsize=(8,5))
+    figure_output_file = os.path.join(figure_output_dir, 'ExtendedFig2c_mutrate_comparison_lawson.pdf')
+
+    fig, axs = plt.subplots(1, 1, figsize=(4,2.5))
     sns.scatterplot(data=median,
                     x='age',
                     y='mutrate',
                     color="red",
                     alpha = 0.5,
                     ax=axs,
+                    s=20,
                     label='WES LCMs')
     sns.scatterplot(data=mutrates,
                     x='age',
                     y='MUTRATE_MB',
                     alpha=0.5,
-                    s=50,
+                    s=20,
                     ax=axs,
                     label='Duplex sequencing')
 
     x_vals = np.array(axs.get_xlim())
     y_vals = b + m * x_vals
-    axs.plot(x_vals, y_vals, '-', color='black', linewidth=2)
+    axs.plot(x_vals, y_vals, '-', color='black', linewidth=1)
 
     axs.spines[['top', 'right']].set_visible(False)
     axs.set_xlabel('Age (years)')
     axs.set_ylabel('Mutations per megabase')
+    axs.legend(frameon = False)
     plt.title('Normal bladder urothelium')
 
-    plt.savefig(figure_output_file, dpi = 300)
+    plt.savefig(figure_output_file, bbox_inches = 'tight', dpi = 300)
 
 def linear_regression(median):
     x = median['age'].values
