@@ -120,6 +120,9 @@ def get_broad_consequence(list_of_annotations):
 
 def load_cohort_data(clinvars_file, muts_file, mutrate_file):
     """
+    Loads files containing mutations, mutation rate data
+    and clinical data and merge them to generate the input
+    for the cohort summary plot
     """
     
     # load maf file and count number of muts per sample

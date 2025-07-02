@@ -1,4 +1,12 @@
 import json
+import matplotlib as mpl
+
+mpl.rcParams.update({
+    'font.family': 'Arial',            # Enforce Arial
+    'pdf.fonttype': 42,                # TrueType for PDF
+    'ps.fonttype': 42,                 # TrueType for PS/EPS
+    'svg.fonttype': 'none',            # Keep text as editable text
+})
 
 
 
@@ -291,12 +299,15 @@ plots_general_config = {
                         # fonsizes
                         "ylabel_fontsize": 6,
                         "xlabel_fontsize": 6,
+                        "xylabel_fontsize": 6,
                         "title_fontsize": 7,
                         "xyticks_fontsize": 5,
+                        "xticks_fontsize": 5,
+                        "yticks_fontsize": 5,
                         "legend_fontsize": 5,
                         "annots_fontsize": 5,
 
-                        "dot_size_scplot": 40,
+                        "dot_size_scplot": 20,
                         "dot_size_coeffplot": 70,
                         "dot_sizebelow_coeffplot": 40,
                         "dot_color_coeffplot": "#D3D3D3",

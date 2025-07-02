@@ -236,24 +236,27 @@ def regr_res_scatterplot(metric, clinvar, data_df, regrres_df, plot_config, plot
     if nplots == 1:
         n = list(plot_config.keys())[0]
         responses = plot_config[n].keys() 
-        sns.scatterplot(data = data_df.loc[data_df["response"].isin(responses)],
-                        x = clinvar, y = metric, hue = "response",
-                        palette = plot_config[n], ax = axs,
-                        legend = False, s = plots_general_config["dot_size_scplot"])
+        sns.scatterplot(
+            data = data_df.loc[data_df["response"].isin(responses)],
+            x = clinvar, y = metric, hue = "response",
+            palette = plot_config[n], ax = axs,
+            legend = False, s = plots_general_config["dot_size_scplot"],
+            linewidth = 0.1  # Reduced edge width
+        )
         sns.lineplot(data = regrres_df.loc[regrres_df["response"].isin(responses)],
                     x = clinvar, y = "predicted", hue = "response",
                     palette = plot_config[n], ax = axs, legend = False)
 
-        axs.set_ylabel(plot_config2["ylabel"], fontsize = plots_general_config["yxlabel_fontsize"]) #TODO: fontsize to general config
-        axs.set_xlabel(plot_config2["xlabel"], fontsize = plots_general_config["yxlabel_fontsize"]) #TODO: fontsize to general config
+        axs.set_ylabel(plot_config2["ylabel"], fontsize = plots_general_config["xylabel_fontsize"]) #TODO: fontsize to general config
+        axs.set_xlabel(plot_config2["xlabel"], fontsize = plots_general_config["xylabel_fontsize"]) #TODO: fontsize to general config
         if add_legend:
             legend_handles = [plt.Line2D([0], [0], marker = 'o', color = 'w', markerfacecolor = color, markersize = 7) for color in plot_config[n].values()]
             axs.legend(handles = legend_handles, labels = [" ".join(g.split("_")) for g in plot_config[n].keys()], 
                     title = "", fontsize = plots_general_config["legend_fontsize"], frameon = False, loc = "upper left") #TODO: fontsize to general config
         axs.spines['right'].set_visible(False)
         axs.spines['top'].set_visible(False)
-        axs.tick_params(axis = 'x', labelsize = plots_general_config["yxticks_fontsize"])  
-        axs.tick_params(axis = 'y', labelsize = plots_general_config["yxticks_fontsize"])  
+        axs.tick_params(axis = 'x', labelsize = plots_general_config["xyticks_fontsize"])  
+        axs.tick_params(axis = 'y', labelsize = plots_general_config["xyticks_fontsize"])  
         axs.set_title(plot_config2["title"], fontsize = plots_general_config["title_fontsize"]) #TODO: fontsize to general config
 
         if text2add != None: # only implemented for 1 plot mode!
@@ -275,16 +278,16 @@ def regr_res_scatterplot(metric, clinvar, data_df, regrres_df, plot_config, plot
                         x = clinvar, y = "predicted", hue = "response",
                         palette = plot_config[n], ax = axs[i], legend = False)
     
-            axs[i].set_ylabel(plot_config2["ylabel"], fontsize = plots_general_config["yxlabel_fontsize"]) #TODO: fontsize to general config
-            axs[i].set_xlabel(plot_config2["xlabel"], fontsize = plots_general_config["yxlabel_fontsize"]) #TODO: fontsize to general config
+            axs[i].set_ylabel(plot_config2["ylabel"], fontsize = plots_general_config["xylabel_fontsize"]) #TODO: fontsize to general config
+            axs[i].set_xlabel(plot_config2["xlabel"], fontsize = plots_general_config["xylabel_fontsize"]) #TODO: fontsize to general config
             if add_legend:
                 legend_handles = [plt.Line2D([0], [0], marker = 'o', color = 'w', markerfacecolor = color, markersize = 7) for color in plot_config[n].values()]
                 axs[i].legend(handles = legend_handles, labels = [" ".join(g.split("_")) for g in plot_config[n].keys()], 
                         title = "", fontsize = plots_general_config["legend_fontsize"], frameon = False, loc = "upper left") #TODO: fontsize to general config
             axs[i].spines['right'].set_visible(False)
             axs[i].spines['top'].set_visible(False)
-            axs[i].tick_params(axis = 'x', labelsize = plots_general_config["yxticks_fontsize"])  
-            axs[i].tick_params(axis = 'y', labelsize = plots_general_config["yxticks_fontsize"]) 
+            axs[i].tick_params(axis = 'x', labelsize = plots_general_config["xyticks_fontsize"])  
+            axs[i].tick_params(axis = 'y', labelsize = plots_general_config["xyticks_fontsize"]) 
             if i == 0:
                 axs[i].set_title(plot_config2["title"], fontsize = plots_general_config["title_fontsize"]) #TODO: fontsize to general config
 
@@ -292,7 +295,7 @@ def regr_res_scatterplot(metric, clinvar, data_df, regrres_df, plot_config, plot
         axs[i-1].set_ylabel("")
         axs[i].set_ylabel("")
         fig.text(-0.05, 0.5, # TODO: pass coords to config
-                plot_config2["common_ylabel"], va = 'center', ha = 'center', rotation = 'vertical', fontsize = plots_general_config["yxlabel_fontsize"])
+                plot_config2["common_ylabel"], va = 'center', ha = 'center', rotation = 'vertical', fontsize = plots_general_config["xylabel_fontsize"])
 
         
     # save
@@ -391,7 +394,7 @@ def regr_res_coeffplot(regrres_df, plot_config, plots_general_config, responses,
             x_coord = plot_config["ylabels_gene_xcoord"]
             if g == "total":
                 g = "All genes"
-            ax.text(x_coord, y_coord, g, fontsize = plots_general_config["yxticks_fontsize"], ha = "right")
+            ax.text(x_coord, y_coord, g, fontsize = plots_general_config["xyticks_fontsize"], ha = "right")
 
 
     else:
@@ -402,7 +405,7 @@ def regr_res_coeffplot(regrres_df, plot_config, plots_general_config, responses,
     if remove_ylabels:
         ax.set_yticks([], [])
     else:
-        ax.set_yticks(y_ticks, y_labels, fontsize = plots_general_config["yxticks_fontsize"])
+        ax.set_yticks(y_ticks, y_labels, fontsize = plots_general_config["xyticks_fontsize"])
 
     # set zero effect in x axis
     ax.vlines(plot_config["null_effect"], -0.7, len(responses)-0.5, ls = '--', color = 'grey')
@@ -416,11 +419,11 @@ def regr_res_coeffplot(regrres_df, plot_config, plots_general_config, responses,
                 head_width = plot_config["arrow_head_width"], head_length = plot_config["arrow_head_length"],
                 color = "black", alpha = 0.65)
         ax.text(plot_config["effectsize_text_loc"], plot_config["effectsize_text_yloc"], plot_config["effectsize_text"],
-                fontsize = plots_general_config["yxlabel_fontsize"])
+                fontsize = plots_general_config["xylabel_fontsize"])
     ax.set_ylim(-0.7, len(responses)-0.5-go_back)
     ax.set_title(plot_config["title"], fontsize = plots_general_config["title_fontsize"])
-    ax.tick_params(axis = 'x', labelsize = plots_general_config["yxticks_fontsize"])  
-    # ax.tick_params(axis = 'y', labelsize = plots_general_config["yxticks_fontsize"]) 
+    ax.tick_params(axis = 'x', labelsize = plots_general_config["xyticks_fontsize"])  
+    # ax.tick_params(axis = 'y', labelsize = plots_general_config["xyticks_fontsize"]) 
     if xscale_log:
         ax.set_xscale('log')
 
@@ -504,7 +507,7 @@ def regr_res_coeffplot_multi(regrres_df_dict, plot_config, plots_general_config,
                 x_coord = plot_config["ylabels_gene_xcoord"]
                 if g == "total":
                     g = "All genes"
-                axs[j].text(x_coord, y_coord, g, fontsize = plots_general_config["yxticks_fontsize"], ha = "right")
+                axs[j].text(x_coord, y_coord, g, fontsize = plots_general_config["xyticks_fontsize"], ha = "right")
 
 
         else:
@@ -515,7 +518,7 @@ def regr_res_coeffplot_multi(regrres_df_dict, plot_config, plots_general_config,
         if remove_ylabels:
             axs[j].set_yticks([], [])
         else:
-            axs[j].set_yticks(y_ticks, y_labels, fontsize = plots_general_config["yxticks_fontsize"])
+            axs[j].set_yticks(y_ticks, y_labels, fontsize = plots_general_config["xyticks_fontsize"])
 
         # set zero effect in x axis
         axs[j].vlines(plot_config["null_effect"], -0.7, len(responses)-0.5, ls = '--', color = 'grey')
@@ -528,11 +531,11 @@ def regr_res_coeffplot_multi(regrres_df_dict, plot_config, plots_general_config,
                 head_width = plot_config["arrow_head_width"][j], head_length = plot_config["arrow_head_length"][j],
                 color = "black", alpha = 0.65)
         axs[j].text(plot_config["effectsize_text_loc"][j], plot_config["effectsize_text_yloc"][j], plot_config["effectsize_text"][j],
-                fontsize = plots_general_config["yxlabel_fontsize"])
+                fontsize = plots_general_config["xylabel_fontsize"])
         axs[j].set_ylim(-0.7, len(responses)-0.5)
         axs[j].set_title(plot_config["title"][j], fontsize = plots_general_config["title_fontsize"])
-        axs[j].tick_params(axis = 'x', labelsize = plots_general_config["yxticks_fontsize"])  
-        # ax.tick_params(axis = 'y', labelsize = plots_general_config["yxticks_fontsize"]) 
+        axs[j].tick_params(axis = 'x', labelsize = plots_general_config["xyticks_fontsize"])  
+        # ax.tick_params(axis = 'y', labelsize = plots_general_config["xyticks_fontsize"]) 
         if xscale_log:
             axs[j].set_xscale('log')
 
@@ -587,7 +590,7 @@ def tidy_sigmoid_axis(axis,i,genes,gene_data,clinvar,def_colors,plot_config,plot
     clinvar_categs = list(def_colors.keys())
     if i == 0:
         axis.spines[['top','right']].set_visible(False)
-        axis.set_ylabel(plot_config["ylabel"], fontsize = plots_general_config["yxlabel_fontsize"])
+        axis.set_ylabel(plot_config["ylabel"], fontsize = plots_general_config["xylabel_fontsize"])
     else:
         axis.spines[['top', 'right']].set_visible(False)
         axis.set_ylabel('')
@@ -597,27 +600,27 @@ def tidy_sigmoid_axis(axis,i,genes,gene_data,clinvar,def_colors,plot_config,plot
 
     if mode == 'twin':
         if len(clinvar_categs) == 2:
-            axis.set_xticks([0.5,1.5],[f'{clinvar_categs[0]}\n(N={str(N_1)})', f'{clinvar_categs[1]}\n(N={str(N_2)})'], fontsize = plots_general_config["yxticks_fontsize"]-2)
+            axis.set_xticks([0.5,1.5],[f'{clinvar_categs[0]}\n(N={str(N_1)})', f'{clinvar_categs[1]}\n(N={str(N_2)})'], fontsize = plots_general_config["xyticks_fontsize"]-2)
             axis.set_xlim([-0.1,2.1])
         elif len(clinvar_categs) == 3:
             N_3 = len(gene_data[gene_data[clinvar]==clinvar_categs[2]])
             axis.set_xticks([0.5, 1.5, 3],
                             [f'{clinvar_categs[0]}', f'{clinvar_categs[1]}', f'{clinvar_categs[2]}'],
-                            fontsize = plots_general_config["yxticks_fontsize"])
-            axis.text(0.5, axis.get_ylim()[1] + 0.05, f'N = {str(N_1)}', ha='center', fontsize=plots_general_config["yxticks_fontsize"] - 2)
-            axis.text(1.5, axis.get_ylim()[1] + 0.05, f'N = {str(N_2)}', ha='center', fontsize=plots_general_config["yxticks_fontsize"] - 2)
-            axis.text(3, axis.get_ylim()[1] + 0.05, f'N = {str(N_3)}', ha='center', fontsize=plots_general_config["yxticks_fontsize"] - 2)
+                            fontsize = plots_general_config["xyticks_fontsize"])
+            axis.text(0.5, axis.get_ylim()[1] + 0.05, f'N = {str(N_1)}', ha='center', fontsize=plots_general_config["xyticks_fontsize"] - 2)
+            axis.text(1.5, axis.get_ylim()[1] + 0.05, f'N = {str(N_2)}', ha='center', fontsize=plots_general_config["xyticks_fontsize"] - 2)
+            axis.text(3, axis.get_ylim()[1] + 0.05, f'N = {str(N_3)}', ha='center', fontsize=plots_general_config["xyticks_fontsize"] - 2)
             axis.set_xlim([-0.1,3.6])
         else:
             print("this function only works with variables with two or three categories")
-    axis.set_xlabel(plot_config["xlabel"], fontsize = plots_general_config["yxlabel_fontsize"])
+    axis.set_xlabel(plot_config["xlabel"], fontsize = plots_general_config["xylabel_fontsize"])
     if genes[i] in plot_config["titles"]:
         gene4title = plot_config["titles"][genes[i]]
     else:
         gene4title = genes[i]
 
     axis.set_title(gene4title, fontsize=plots_general_config["title_fontsize"])
-    axis.tick_params(axis='y', labelsize=plots_general_config["yxticks_fontsize"])
+    axis.tick_params(axis='y', labelsize=plots_general_config["xyticks_fontsize"])
 
 def plot_sigmoids(figure_output_file,
                 omega_data,
