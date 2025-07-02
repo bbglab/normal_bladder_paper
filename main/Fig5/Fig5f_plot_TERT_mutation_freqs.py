@@ -296,12 +296,12 @@ def plot_TERT_panel(figure_output_dir,
     site_selection_data_format['site_selection'] = site_selection_data_format['site_selection'].fillna(0)
 
     figure_output_file = os.path.join(figure_output_dir,'Fig5f_TERT_needleplots.pdf')
-    fig = plt.figure(figsize=(7, 3.5))
+    fig = plt.figure(figsize=(7, 3.3))
     gs = GridSpec(20, 11, figure=fig, wspace=0, hspace=0)
-    ax_tumor = fig.add_subplot(gs[13:19, 0:8])
-    ax_normal = fig.add_subplot(gs[0:6, 0:8], sharex=ax_tumor)
-    ax_selection = fig.add_subplot(gs[7:9, 0:8], sharex=ax_tumor)
-    ax_saturation = fig.add_subplot(gs[10:12, 0:8], sharex=ax_tumor)
+    ax_tumor = fig.add_subplot(gs[14:19, 0:8])
+    ax_normal = fig.add_subplot(gs[0:5, 0:8], sharex=ax_tumor)
+    ax_selection = fig.add_subplot(gs[6:9, 0:8], sharex=ax_tumor)
+    ax_saturation = fig.add_subplot(gs[10:13, 0:8], sharex=ax_tumor)
     ax_stripplot_saturation = fig.add_subplot(gs[0:8, 9:])
     ax_scatter = fig.add_subplot(gs[11:19, 9:])
     plt.setp(ax_normal.get_xticklabels(), visible=False)
@@ -359,6 +359,8 @@ def plot_TERT_panel(figure_output_dir,
     xlabel_scatter = 'Experimental\nfunctional impact'
     ylabel_scatter = 'Site selection'
     tidy_axis_scatterplot(ax_scatter, xlabel_scatter, ylabel_scatter)
+
+    fig.suptitle("TERT promoter", y = 0.95)
 
     #Save plot
     print(figure_output_file)
