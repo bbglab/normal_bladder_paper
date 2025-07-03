@@ -1,0 +1,26 @@
+	is_male	had_prior_chemotherapy	history_smoking	bmi_scaled	age_decades	history_drinking
+ARID1A_missense	0		0	0	0	
+ARID1A_truncating	0		0	0	0	
+CDKN1A_missense	0		0	0	0	
+CDKN1A_truncating	0		0	0	0	
+CREBBP_missense	0		0	0	0	
+CREBBP_truncating	0		0	0	0	
+EP300_missense	0		0	0	0	
+EP300_truncating	0		0	0	0	
+FOXQ1_missense	0	0	0	0	0	
+KDM6A_missense	0	0	0	0	0	
+KDM6A_truncating	0	0	0	0	0	
+KMT2C_missense	0		0	0	0	
+KMT2C_truncating	0	0	0	0	0	
+KMT2D_missense	0		0	0	0	
+KMT2D_truncating	0	0	0	0	0	
+NOTCH2_missense	0		0	0	0	
+NOTCH2_truncating	0		0	0	0	
+RB1_missense	0		0	0	0	
+RBM10_missense	0		0	0	0	0
+RBM10_truncating	0	0	0	0	0	
+STAG2_missense	0	0	0	0	0	
+STAG2_truncating	0	0	0	0	0	
+TP53_missense	0		0	0	0	
+total_truncating	0	0	0	0	0	
+total_missense	0		0	0	0	
