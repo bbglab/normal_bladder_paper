@@ -1,28 +1,38 @@
 import os
 import pandas as pd
 
-def load_lmem_pred(clinvar, res_dir, metric, obsdata_df = None, index2replace = ""):
+def load_lmem_pred(clinvar, res_dir, metric, obsdata_df = None, sign_threshold = 0.2):
     """
     """
     
     # load results of uni and multivariate analysis
     res_dfs_dict = {}
+    idx_cols_saved = False
     for file in os.listdir(res_dir):
         if not file.startswith('.') and metric in file:
             res_name = ".".join(file.split(".")[2:4])
             res_dfs_dict[res_name] = pd.read_csv(os.path.join(res_dir, file), sep = "\t", index_col = 0)
+            if not idx_cols_saved:
+                idxs = res_dfs_dict[res_name].index.to_list()
+                cols = res_dfs_dict[res_name].columns.to_list()
+                idx_cols_saved = True
+            else:
+                res_dfs_dict[res_name] = res_dfs_dict[res_name].reindex(idxs)
+                res_dfs_dict[res_name] = res_dfs_dict[res_name].T.reindex(cols).T
 
-    # combine uni and multi results: if multi was calculated, prioritaze this result
+    # combine uni and multi results: if multi was calculated and uni was significant, use multi calculation
+    sign_mask = res_dfs_dict["univariateME.pvals"] < sign_threshold
+    res_dfs_dict["multivariateME.coeffs"] = res_dfs_dict["multivariateME.coeffs"][sign_mask]
+    res_dfs_dict["multivariateME.intercepts"] = res_dfs_dict["multivariateME.intercepts"][sign_mask]
+    res_dfs_dict["multivariateME.pvals"] = res_dfs_dict["multivariateME.pvals"][sign_mask]
+    res_dfs_dict["multivariateME.lowi"] = res_dfs_dict["multivariateME.lowi"][sign_mask]
+    res_dfs_dict["multivariateME.highi"] = res_dfs_dict["multivariateME.highi"][sign_mask]
+
     coeffs_df = res_dfs_dict["multivariateME.coeffs"].combine_first(res_dfs_dict["univariateME.coeffs"])
-    # coeffs_df.index = coeffs_df.index.str.replace(index2replace, '', regex = True) #TODO: bug index2replace
     interc_df = res_dfs_dict["multivariateME.intercepts"].combine_first(res_dfs_dict["univariateME.intercepts"])
-    # interc_df.index = interc_df.index.str.replace(index2replace, '', regex = True) #TODO: bug index2replace
     pvals_df = res_dfs_dict["multivariateME.pvals"].combine_first(res_dfs_dict["univariateME.pvals"])
-    # pvals_df.index = pvals_df.index.str.replace(index2replace, '', regex = True) #TODO: bug index2replace
     lowi_df = res_dfs_dict["multivariateME.lowi"].combine_first(res_dfs_dict["univariateME.lowi"])
-    # lowi_df.index = lowi_df.index.str.replace(index2replace, '', regex = True) #TODO: bug index2replace
     highi_df = res_dfs_dict["multivariateME.highi"].combine_first(res_dfs_dict["univariateME.highi"])
-    # highi_df.index = highi_df.index.str.replace(index2replace, '', regex = True) #TODO: bug index2replace
     res_df = interc_df[[clinvar]].merge(
         coeffs_df[[clinvar]], right_index = True, left_index = True, how = "outer").merge(
         pvals_df[[clinvar]], right_index = True, left_index = True, how = "outer").merge(
@@ -37,7 +47,7 @@ def load_lmem_pred(clinvar, res_dir, metric, obsdata_df = None, index2replace = 
         obsdata_df = obsdata_df.rename({"GENE": "gene"}, axis = 1)
 
         ## create age_decades for AGE variable
-        if clinvar == "age_decades": #TODO: do this transformation in the nb/script to process the clinical data
+        if clinvar == "age_decades": 
             obsdata_df["age_decades"] = obsdata_df.apply(lambda row: row["AGE"] / 10, axis = 1)
 
         
@@ -47,7 +57,7 @@ def load_lmem_pred(clinvar, res_dir, metric, obsdata_df = None, index2replace = 
         res_df["predicted"] = res_df["intercept"] + res_df["coeff"] * res_df[clinvar]
 
         if clinvar == "age_decades":
-            res_df["AGE"] = res_df.apply(lambda row: row["age_decades"] * 10, axis = 1)  #TODO: do this transformation in the nb/script to process the clinical data
+            res_df["AGE"] = res_df.apply(lambda row: row["age_decades"] * 10, axis = 1) 
 
     return res_df
 

@@ -306,13 +306,13 @@ plots_general_config = {
                         "legend_fontsize": 5,
                         "annots_fontsize": 5,
 
-                        "dot_size_scplot": 20,
-                        "dot_size_coeffplot": 70,
+                        "dot_size_scplot": 15,
+                        "dot_size_coeffplot": 5,
                         "dot_sizebelow_coeffplot": 40,
                         "dot_color_coeffplot": "#D3D3D3",
                         "dot_colorabove_coeffplot": "#D62728",
                         "dot_colorbelow_coeffplot": "#f29c9e",
                         "dot_edgethres_coeffplot": 0.2,
-                        "dot_edgewidth_coeffplot": 1.5
+                        "dot_edgewidth_coeffplot": 0.5
                         }
 

@@ -164,57 +164,6 @@ def plot_double_heatmap(data, heatmap_config, save_file):
 
     return None
 
-def km_plot(data, time_var, res_var, categs_dict, save_file,
-            comp_var = None, plot_config = {}, do_logrank = True):
-    """
-    """
-
-    fig, ax = plt.subplots(1, 1, figsize = plot_config["figsize"])
-
-    # calculate KM curves and plot
-    kmf = KaplanMeierFitter()
-    for categ in categs_dict:
-        if categ == "no_categ":
-            data_categ = data
-        else:
-            data_categ = data.loc[data[comp_var] == categ]
-
-        kmf.fit(durations = data_categ[time_var], event_observed = data_categ[res_var],
-                label = f'{categs_dict[categ][1]} (n = {len(data_categ)})')
-        kmf.plot_cumulative_density(ax = ax, ci_show = False, at_risk_counts = False,
-                                    color = categs_dict[categ][0])
-    
-    # plot config
-    ax.set_xlabel(plot_config["xlabel"], fontsize = plot_config["xlabel_fontsize"])
-    ax.set_ylabel(plot_config["ylabel"], fontsize = plot_config["ylabel_fontsize"])
-    ax.tick_params(axis = "x", labelsize = plot_config["xticks_fontsize"])
-    ax.tick_params(axis = "y", labelsize = plot_config["yticks_fontsize"])
-    ax.legend(fontsize = plot_config["legend_fontsize"], frameon = False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['top'].set_visible(False)
-
-    # if indicated, do log-rank test to compare the categories of the comp_var
-    if do_logrank and comp_var is not None:
-
-        if len(data[comp_var].unique()) == 2:
-            pval = logrank_test(data.loc[data[comp_var] == list(categs_dict.keys())[0]][time_var],
-                                data.loc[data[comp_var] == list(categs_dict.keys())[1]][time_var],
-                                event_observed_A = data.loc[data[comp_var] == list(categs_dict.keys())[0]][res_var], 
-                                event_observed_B = data.loc[data[comp_var] == list(categs_dict.keys())[1]][res_var]).p_value
-
-        elif len(data[comp_var].unique()) > 2:
-            pval = multivariate_logrank_test(data[time_var], data[comp_var], data[res_var]).pvalue
-
-        ax.add_artist(AnchoredText(f'p-val < {pval:.2e}',
-                    frameon = False, loc = 'lower right', 
-                    prop = dict(size = plot_config["text_fontsize"])))
-
-    # save
-    plt.savefig(save_file, dpi = plot_config["figsave_resolution"], 
-                bbox_inches = 'tight')
-
-    return None
-
 def regr_res_scatterplot(metric, clinvar, data_df, regrres_df, plot_config, plot_config2, 
                         plots_general_config, save_file, add_legend = True, cut_at_zero = False,
                         common_ylabel = False, text2add = None):
@@ -304,14 +253,14 @@ def regr_res_scatterplot(metric, clinvar, data_df, regrres_df, plot_config, plot
     return None
 
 def regr_res_coeffplot(regrres_df, plot_config, plots_general_config, responses, 
-                    save_file, regrres2compare_df = None, figsize = (3, 5), remove_ylabels = False,
-                    colored = False, xscale_log = False, write_coeff = False, write_dndstype = False,
-                    add_arrow = True):
+                    save_file, regrres2compare_df = None, figsize = (3, 5),
+                    remove_ylabels = False,
+                    colored = False, add_arrow = True):
     """
     """
 
     fig, ax = plt.subplots(1, 1, figsize = figsize) 
-    regrres_df = regrres_df.set_index("gene") #TODO: maybe is better to have/not have gene set as index differently in the functions of this nb
+    regrres_df = regrres_df.set_index("gene") 
     if regrres2compare_df is not None:
         regrres2compare_df = regrres2compare_df.set_index("gene")
         main_dot_color = plots_general_config["dot_colorabove_coeffplot"]
@@ -319,7 +268,6 @@ def regr_res_coeffplot(regrres_df, plot_config, plots_general_config, responses,
         main_dot_color = plots_general_config["dot_color_coeffplot"]
 
     # plot one line per coefficient
-    go_back = 0
     for i, resp in enumerate(responses):
 
         ## check whether the coeff is significant to highlight the point in black
@@ -331,33 +279,12 @@ def regr_res_coeffplot(regrres_df, plot_config, plots_general_config, responses,
         ## plot dot + confidence interval
         if colored:
             main_dot_color = gene2color[resp]
-        if resp == "CDKN1At":
-            i -= 0.85
-        ax.scatter(regrres_df.loc[resp]["coeff"], i-go_back, 
+        ax.scatter(regrres_df.loc[resp]["coeff"], i, 
                 color = main_dot_color,
                 s = plots_general_config["dot_size_coeffplot"],
                 edgecolors = edgecolors, linewidths = plots_general_config["dot_edgewidth_coeffplot"])
-        if write_coeff:
-            ax.text(regrres_df.loc[resp]["coeff"], i + plot_config["writecoeff_offset"],
-                    # f"{regrres_df.loc[resp]['coeff']:.2f} ({regrres_df.loc[resp]['qval']:.3f})",
-                    f"{regrres_df.loc[resp]['qval']:.3f}", 
-                    ha = "center", va = "bottom", 
-                    fontsize = plot_config["coeff_fontsize"], color = "black")
-        ax.hlines(i-go_back, regrres_df.loc[resp]["lowci"], regrres_df.loc[resp]["highci"],
-                color = main_dot_color)
-        if write_dndstype:
-            if resp == "CDKN1Am":
-                dndstype = "Missense"
-                extra_right = 3
-            else:
-                dndstype = "Truncating"
-                extra_right = 2
-            ax.text(regrres_df.loc[resp]["highci"]+extra_right, i-go_back,
-                    dndstype, 
-                    ha = "left", va = "center", 
-                    fontsize = 8, color = "black")
-        if resp == "CDKN1At":
-            go_back = 1
+        ax.hlines(i, regrres_df.loc[resp]["lowci"], regrres_df.loc[resp]["highci"],
+                color = main_dot_color, linewidth = plots_general_config["dot_edgewidth_coeffplot"])
 
         ## plot an additional coefficient line below to compare
         if regrres2compare_df is not None:
@@ -372,14 +299,9 @@ def regr_res_coeffplot(regrres_df, plot_config, plots_general_config, responses,
                 color = plots_general_config["dot_colorbelow_coeffplot"],
                 s = plots_general_config["dot_size_coeffplot"],
                 edgecolors = edgecolors, linewidths = plots_general_config["dot_edgewidth_coeffplot"])
-            if write_coeff:
-                ax.text(regrres2compare_df.loc[resp]["coeff"], i - offset + plot_config["writecoeff_offset"],
-                        # f"{regrres2compare_df.loc[resp]['coeff']:.2f} ({regrres2compare_df.loc[resp]['qval']:.3f})", 
-                        f"{regrres2compare_df.loc[resp]['qval']:.3f}", 
-                        ha = "center", va = "bottom", 
-                        fontsize = plot_config["coeff_fontsize"], color = "black")
             ax.hlines(i - offset, regrres2compare_df.loc[resp]["lowci"], regrres2compare_df.loc[resp]["highci"],
-                    color = plots_general_config["dot_colorbelow_coeffplot"])
+                    color = plots_general_config["dot_colorbelow_coeffplot"],
+                    linewidth = plots_general_config["dot_edgewidth_coeffplot"])
 
     # add labels to the plotted coefficients
     y_ticks = [i for i in range(len(responses))]
@@ -394,8 +316,6 @@ def regr_res_coeffplot(regrres_df, plot_config, plots_general_config, responses,
             if g == "total":
                 g = "All genes"
             ax.text(x_coord, y_coord, g, fontsize = plots_general_config["xyticks_fontsize"], ha = "right")
-
-
     else:
         y_labels = responses
 
@@ -407,40 +327,37 @@ def regr_res_coeffplot(regrres_df, plot_config, plots_general_config, responses,
         ax.set_yticks(y_ticks, y_labels, fontsize = plots_general_config["xyticks_fontsize"])
 
     # set zero effect in x axis
-    ax.vlines(plot_config["null_effect"], -0.7, len(responses)-0.5, ls = '--', color = 'grey')
+    ax.vlines(plot_config["null_effect"], -0.7, len(responses)-0.5, ls = '--', color = 'grey',
+            linewidth = plots_general_config["dot_edgewidth_coeffplot"])
 
     # subplot config
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    # ax.set_xlabel('Effect size', fontsize = 8.5)
     if add_arrow:
         ax.arrow(plot_config["null_effect"],  plot_config["arrow_yloc"], plot_config["arrow_xlim"], 0, clip_on = False,
                 head_width = plot_config["arrow_head_width"], head_length = plot_config["arrow_head_length"],
-                color = "black", alpha = 0.65)
+                color = "black", linewidth = 0.5)
         ax.text(plot_config["effectsize_text_loc"], plot_config["effectsize_text_yloc"], plot_config["effectsize_text"],
-                fontsize = plots_general_config["xylabel_fontsize"])
-    ax.set_ylim(-0.7, len(responses)-0.5-go_back)
-    ax.set_title(plot_config["title"], fontsize = plots_general_config["title_fontsize"])
+                fontsize = plots_general_config["xyticks_fontsize"])
+    ax.set_ylim(-0.7, len(responses)-0.5)
+    ax.set_title(plot_config["title"], fontsize = plots_general_config["xylabel_fontsize"])
     ax.tick_params(axis = 'x', labelsize = plots_general_config["xyticks_fontsize"])  
-    # ax.tick_params(axis = 'y', labelsize = plots_general_config["xyticks_fontsize"]) 
-    if xscale_log:
-        ax.set_xscale('log')
 
     # save
-    plt.savefig(save_file, dpi = 300, bbox_inches = 'tight') #TODO: resolution to general config
+    plt.savefig(save_file, dpi = 300, bbox_inches = 'tight') 
 
     return None
 
 def regr_res_coeffplot_multi(regrres_df_dict, plot_config, plots_general_config, responses, 
                     save_file, regrres2compare_df = None, figsize = (3, 5), remove_ylabels = False,
-                    colored = False, xscale_log = False, write_coeff = False):
+                    colored = False):
     """
     """
 
     fig, axs = plt.subplots(1, len(regrres_df_dict), figsize = figsize, sharey = True) 
 
     for j, regrres_df in enumerate(regrres_df_dict.values()):
-        regrres_df = regrres_df.set_index("gene") #TODO: maybe is better to have/not have gene set as index differently in the functions of this nb
+        regrres_df = regrres_df.set_index("gene") 
         if regrres2compare_df is not None:
             regrres2compare_df = regrres2compare_df.set_index("gene")
             main_dot_color = plots_general_config["dot_colorabove_coeffplot"]
@@ -463,14 +380,8 @@ def regr_res_coeffplot_multi(regrres_df_dict, plot_config, plots_general_config,
                     color = main_dot_color,
                     s = plots_general_config["dot_size_coeffplot"],
                     edgecolors = edgecolors, linewidths = plots_general_config["dot_edgewidth_coeffplot"])
-            if write_coeff:
-                axs[j].text(regrres_df.loc[resp]["coeff"], i + plot_config["writecoeff_offset"],
-                        # f"{regrres_df.loc[resp]['coeff']:.2f} ({regrres_df.loc[resp]['qval']:.3f})", 
-                        f"{regrres_df.loc[resp]['qval']:.3f}", 
-                        ha = "center", va = "bottom", 
-                        fontsize = plot_config["coeff_fontsize"], color = "black")
             axs[j].hlines(i, regrres_df.loc[resp]["lowci"], regrres_df.loc[resp]["highci"],
-                    color = main_dot_color)
+                    color = main_dot_color, linewidth = plots_general_config["dot_edgewidth_coeffplot"])
 
             ## plot an additional coefficient line below to compare
             if regrres2compare_df is not None:
@@ -484,15 +395,10 @@ def regr_res_coeffplot_multi(regrres_df_dict, plot_config, plots_general_config,
                 axs[j].scatter(regrres2compare_df.loc[resp]["coeff"], i - offset, 
                     color = plots_general_config["dot_colorbelow_coeffplot"],
                     s = plots_general_config["dot_size_coeffplot"],
-                    edgecolors = edgecolors, linewidths = plots_general_config["dot_edgewidth_coeffplot"])
-                if write_coeff:
-                    axs[j].text(regrres2compare_df.loc[resp]["coeff"], i - offset + plot_config["writecoeff_offset"],
-                        # f"{regrres2compare_df.loc[resp]['coeff']:.2f} ({regrres2compare_df.loc[resp]['qval']:.3f})", 
-                        f"{regrres2compare_df.loc[resp]['qval']:.3f}", 
-                        ha = "center", va = "bottom", 
-                        fontsize = plot_config["coeff_fontsize"], color = "black")
+                    edgecolors = edgecolors, linewidths = plots_general_config["dot_edgewidth_coeffplot"])  
                 axs[j].hlines(i - offset, regrres2compare_df.loc[resp]["lowci"], regrres2compare_df.loc[resp]["highci"],
-                        color = plots_general_config["dot_colorbelow_coeffplot"])
+                    color = plots_general_config["dot_colorbelow_coeffplot"],
+                    linewidth = plots_general_config["dot_edgewidth_coeffplot"])
 
         # add labels to the plotted coefficients
         y_ticks = [i for i in range(len(responses))]
@@ -520,23 +426,21 @@ def regr_res_coeffplot_multi(regrres_df_dict, plot_config, plots_general_config,
             axs[j].set_yticks(y_ticks, y_labels, fontsize = plots_general_config["xyticks_fontsize"])
 
         # set zero effect in x axis
-        axs[j].vlines(plot_config["null_effect"], -0.7, len(responses)-0.5, ls = '--', color = 'grey')
+        axs[j].vlines(plot_config["null_effect"], -0.7, len(responses)-0.5, ls = '--', color = 'grey',
+            linewidth = plots_general_config["dot_edgewidth_coeffplot"])
 
         # subplot config
         axs[j].spines['top'].set_visible(False)
         axs[j].spines['right'].set_visible(False)
-        # ax.set_xlabel('Effect size', fontsize = 8.5)
         axs[j].arrow(plot_config["null_effect"],  plot_config["arrow_yloc"][j], plot_config["arrow_xlim"][j], 0, clip_on = False,
                 head_width = plot_config["arrow_head_width"][j], head_length = plot_config["arrow_head_length"][j],
-                color = "black", alpha = 0.65)
+                color = "black", linewidth = 0.5)
         axs[j].text(plot_config["effectsize_text_loc"][j], plot_config["effectsize_text_yloc"][j], plot_config["effectsize_text"][j],
-                fontsize = plots_general_config["xylabel_fontsize"])
+                fontsize = plots_general_config["xyticks_fontsize"])
         axs[j].set_ylim(-0.7, len(responses)-0.5)
-        axs[j].set_title(plot_config["title"][j], fontsize = plots_general_config["title_fontsize"])
+        axs[j].set_title(plot_config["title"][j], fontsize = plots_general_config["xylabel_fontsize"])
         axs[j].tick_params(axis = 'x', labelsize = plots_general_config["xyticks_fontsize"])  
-        # ax.tick_params(axis = 'y', labelsize = plots_general_config["xyticks_fontsize"]) 
-        if xscale_log:
-            axs[j].set_xscale('log')
+        
 
     # save
     plt.savefig(save_file, dpi = 300, bbox_inches = 'tight') #TODO: resolution to general config
