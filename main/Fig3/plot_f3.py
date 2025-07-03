@@ -14,7 +14,7 @@ sys.path.append('../..') #TODO: pass this file to repo dir
 from consensus_variables import * #TODO: pass this file to repo dir
 
 ## -- Auxiliary functions -- ##
-def add_age_triangle(ax, width, add_text = False):
+def add_age_triangle(ax, width, add_text = False, text_fontsize = None):
     # Triangle growing from left to right, centered above the heatmap
     triangle = patches.Polygon(
         xy = [[0, 1.02], [width, 1.02], [width, 1.08]],  # flat base from 0 to width, height at right edge
@@ -29,10 +29,10 @@ def add_age_triangle(ax, width, add_text = False):
         ax.text(1.04, 1.05, "Age",
             transform=ax.transAxes,
             ha='center', va='center',
-            fontsize=12, fontweight = "bold",
+            fontsize=text_fontsize, fontweight = "bold",
             color='black', clip_on=False)
 
-def add_legend_patch(ax, heatmap_config):
+def add_legend_patch(ax, fontsize):
     x_offset = 1.02  # slight right of the plot
     y_center = 0.95  # top of the legend area
     
@@ -45,7 +45,7 @@ def add_legend_patch(ax, heatmap_config):
     ax.text(x_offset + rect_height - 0.005, y_center + rect_height, "N",
             transform=ax.transAxes,
             ha='center', va='center',
-            fontsize=10,
+            fontsize=fontsize,
             color='black', clip_on=False)
     
     ax.add_patch(patches.Rectangle((x_offset, y_center - rect_height/2), 0.05, rect_height, clip_on=False,
@@ -53,22 +53,22 @@ def add_legend_patch(ax, heatmap_config):
     ax.text(x_offset + rect_height - 0.005, y_center, "N",
             transform=ax.transAxes,
             ha='center', va='center',
-            fontsize=10,
+            fontsize=fontsize,
             color='black', clip_on=False)
 
     # Add text labels for the rectangles
     ax.text(x_offset + 0.06, y_center + rect_height/2, "Driver SNVs",
-            transform=ax.transAxes, va='bottom', ha='left', fontsize=10)
+            transform=ax.transAxes, va='bottom', ha='left', fontsize=fontsize)
     ax.text(x_offset + 0.06, y_center + 0.01, "Protein-affecting\nindels",
-            transform=ax.transAxes, va='top', ha='left', fontsize=10)
+            transform=ax.transAxes, va='top', ha='left', fontsize=fontsize)
 
     # Add black dot and label for "Donor with 2 samples"
     dot_y = y_center - 0.1  # place below the boxes
     ax.plot(x_offset + 0.015, dot_y, 'o', transform=ax.transAxes, color='black', markersize=4, clip_on=False)
-    ax.text(x_offset + 0.03, dot_y, "Donor with 2 samples",
-            transform=ax.transAxes, va='center', ha='left', fontsize=10, clip_on=False)
+    ax.text(x_offset + 0.03, dot_y, "Donor with\n2 samples",
+            transform=ax.transAxes, va='center', ha='left', fontsize=fontsize, clip_on=False)
 
-def add_dots_below_xticks(ax, dot_samples, offset = 27.5, size = 4, color = "black"):
+def add_dots_below_xticks(ax, dot_samples, offset = 28, size = 1.5, color = "black"):
     """
     Add dots below x-axis tick labels for specific samples.
     """
@@ -91,7 +91,7 @@ def plot_double_heatmap(data, heatmap_config, save_file):
     fig, axs = plt.subplots(1, 2, figsize = heatmap_config["figsize"], sharey = False,
                             gridspec_kw = {'width_ratios': heatmap_config["width_ratios"]})
 
-    # normalize data for heatmap
+    # normalize data for heatmap (gene-wise)
     data = data.reindex(heatmap_config["genes_order"])
     data_norm = (data.T / data.max(axis='columns')).T
 
@@ -119,7 +119,7 @@ def plot_double_heatmap(data, heatmap_config, save_file):
 
     
     # plot h2
-    h2 = sns.heatmap(
+    sns.heatmap(
     data_norm[heatmap_config["h2_subset"]], 
     annot = data[heatmap_config["h2_subset"]],
     fmt = "", 
@@ -127,7 +127,8 @@ def plot_double_heatmap(data, heatmap_config, save_file):
     ax = axs[1],
     annot_kws = {"size": heatmap_config["annot_fontsize"]},
     cbar = False)
-    add_age_triangle(axs[1], len(heatmap_config["h2_subset"]), add_text = True)
+    add_age_triangle(axs[1], len(heatmap_config["h2_subset"]), 
+                    add_text = True, text_fontsize = heatmap_config["annot_fontsize"])
     duplicated_samples = [s for s in heatmap_config["duplicated_samples"] if s in heatmap_config["h2_subset"]]
     add_dots_below_xticks(axs[1], duplicated_samples)
 
@@ -139,9 +140,9 @@ def plot_double_heatmap(data, heatmap_config, save_file):
     # separate genes
     for row in heatmap_config["rows2separate"]:
         axs[0].hlines(y = row, xmin = 0, xmax = len(heatmap_config["h1_subset"]),
-                    colors = "white", linewidth = 3)
+                    colors = "white", linewidth = 0.5)
         axs[1].hlines(y = row, xmin = 0, xmax = len(heatmap_config["h2_subset"]),
-                    colors = "white", linewidth = 3)
+                    colors = "white", linewidth = 0.5)
 
     cbar_ax = fig.add_axes(heatmap_config["cmap_loc"])  # [left, bottom, width, height]
     norm = plt.Normalize(vmin = data_norm.min().min(), vmax = data_norm.max().max())
@@ -151,10 +152,8 @@ def plot_double_heatmap(data, heatmap_config, save_file):
     cbar.outline.set_visible(False)
     cbar.ax.tick_params(labelsize = heatmap_config["cmap_ticks_fontsize"])
 
-    add_legend_patch(axs[1], heatmap_config)
+    add_legend_patch(axs[1], fontsize = heatmap_config["annot_fontsize"])
 
-    # axs[0].set_xlabel("")
-    # axs[1].set_xlabel("")
     axs[0].set_ylabel("")
     axs[1].set_ylabel("")
 

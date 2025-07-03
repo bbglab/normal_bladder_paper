@@ -67,7 +67,6 @@ clean_maf_file = f"{deepcsa_run_dir}/clean_germline_somatic/all_samples.clean.mu
 somatic_maf_file = f"{deepcsa_run_dir}/clean_somatic/all_samples.somatic.mutations.tsv"
 
 clinvars_file = f"{origin_dir}/projects/bladder_ts/data/complete_cohort/samples_metadata/20250516_metadata_bladder.with_depths.tsv" #TODO: add a metadata.tsv file in the repo with all the metadata compiled
-clinvars_regr_file = f"{origin_dir}/projects/bladder_ts/data/complete_cohort/samples_metadata/20250516_metadata_bladder.with_depths.tsv"
 
 # oncodrive3d datasets
 ## TODO, make sure that this are absolute paths to the datasets
@@ -119,34 +118,34 @@ genes_mut_epithelium_order = ['KMT2D', 'KDM6A', 'ARID1A', 'RBM10', 'FOXQ1',
                               'KMT2C', 'RB1', 'TP53']
 
 gene_order_agebias = [
- 'RBM10',
- 'KDM6A',
- 'KMT2D',
- 'TP53',
- 'STAG2',
- 'CDKN1A',
- 'ARID1A',
- 'CREBBP',
- 'EP300',
- 'NOTCH2',
- 'KMT2C',
- 'RB1',
- 'FOXQ1']
+'RBM10',
+'KDM6A',
+'KMT2D',
+'TP53',
+'STAG2',
+'CDKN1A',
+'ARID1A',
+'CREBBP',
+'EP300',
+'NOTCH2',
+'KMT2C',
+'RB1',
+'FOXQ1']
 
 gene_order_sexbias = [
- 'RBM10',
- 'CDKN1A',
- 'ARID1A',
- 'STAG2',
- 'KDM6A',
- 'KMT2D',
- 'TP53',
- 'CREBBP',
- 'EP300',
- 'NOTCH2',
- 'KMT2C',
- 'RB1',
- 'FOXQ1']
+'RBM10',
+'CDKN1A',
+'ARID1A',
+'STAG2',
+'KDM6A',
+'KMT2D',
+'TP53',
+'CREBBP',
+'EP300',
+'NOTCH2',
+'KMT2C',
+'RB1',
+'FOXQ1']
 
 genes_regressions = ["KMT2D","EP300","ARID1A","CREBBP","NOTCH2","KMT2C","STAG2","RB1",
                    "RBM10","KDM6A","TP53",
