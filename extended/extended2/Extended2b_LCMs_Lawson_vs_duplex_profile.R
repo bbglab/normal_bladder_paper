@@ -14,9 +14,9 @@ mutation_counts_lawson <- mutation_counts_lawson[,c(2:ncol(mutation_counts_lawso
 print(mutation_counts_lawson[1:5,1:5])
 
 # Load duplex data
-deepCSA_run <- "2025-05-14_deepCSA_45_donors"
+deepCSA_run_dir <- "/data/bbg/nobackup/bladder_ts/results/2025-05-14_deepCSA_45_donors"
 output_dir <- paste0("plots/")
-df <- as.data.frame(t(read.table(paste("/data/bbg/nobackup/bladder_ts/results/", deepCSA_run, "/signatures_hdp/input/samples_matrix.all.hdp.csv", sep=""), sep=" ", header=TRUE, row.names=1)))
+df <- as.data.frame(t(read.table(paste(deepCSA_run_dir, "/signatures_hdp/input/samples_matrix.all.hdp.csv", sep=""), sep=" ", header=TRUE, row.names=1)))
 rownames(df) <- paste0(substr(rownames(df),1,1),"[", substr(rownames(df),3,3), ">", substr(rownames(df),5,5), "]",substr(rownames(df),7,7))
 print(head(df[,1:5]))
 
