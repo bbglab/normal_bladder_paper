@@ -45,20 +45,22 @@ def plot_legend(color_def,axis):
     axis.legend(handles=patches,bbox_to_anchor=(1.05, 1),
                                 loc='upper left', borderaxespad=0.)
 
+
 def axis_manhattan(s0,s1,s2,y_value,axis):
 
-    axis.scatter(s0['rel_pos'].values, s0[y_value].values, alpha=0.3, s=3, facecolor = 'none', color=s0['color'])
-    axis.scatter(s1['rel_pos'].values, s1[y_value].values, alpha=0.5, s=6, facecolor = 'none', color=s1['color'])
-    axis.scatter(s2['rel_pos'].values, s2[y_value].values, alpha=1, s=10, color=s2['color'])
+    axis.scatter(s0['rel_pos'].values, s0[y_value].values, alpha=0.3, s=1, facecolor = 'none', color=s0['color'])
+    axis.scatter(s1['rel_pos'].values, s1[y_value].values, alpha=0.5, s=2, facecolor = 'none', color=s1['color'])
+    axis.scatter(s2['rel_pos'].values, s2[y_value].values, alpha=1, s=3, color=s2['color'])
 
-    axis.spines[['top', 'right', 'bottom']].set_visible(False)
+    # axis.spines[['top', 'right', 'bottom']].set_visible(False)
+    axis.spines[['top', 'right']].set_visible(False)
 
     if y_value == 'logp':
-        axis.set_ylabel('-log(p-value)', fontsize=8)
+        axis.set_ylabel('-log(p-value)')
         axis.set_xlabel('')
     else:
-        axis.set_ylabel('Site selection', fontsize=9)
-        axis.set_xlabel('', fontsize=8)
+        axis.set_ylabel('Site selection')
+        axis.set_xlabel('')
 
 
 def plot_manhattan(figure_output_dir,
@@ -66,7 +68,7 @@ def plot_manhattan(figure_output_dir,
                     color_def):
 
     figure_output_file = os.path.join(figure_output_dir, 'ExtendedFig10a_site_selection_manhattan.png')
-    fig, ax = plt.subplots(figsize=(6,3))  # Adjust figure size as needed
+    fig, ax = plt.subplots(figsize=(3.2,1.6))  # Adjust figure size as needed
 
     s0 = site_selection_data[site_selection_data['p_value']>=1e-5]
     s1 = site_selection_data[(site_selection_data['p_value']<1e-5)&(site_selection_data['p_value']>=1e-15)]
@@ -81,10 +83,10 @@ def plot_manhattan(figure_output_dir,
     # print(x_tick_positions.values)
     ax.set_ylim(-20)
     ax.set_xticks(x_tick_positions.values)
-    ax.set_xticklabels(x_tick_positions.index.values, rotation = 90, fontsize = 8.5)
+    ax.set_xticklabels(x_tick_positions.index.values, rotation = 90)
 
     plt.tight_layout()
-    plt.savefig(figure_output_file, dpi=300)
+    plt.savefig(figure_output_file, bbox_inches = 'tight', dpi=300)
 
 def main(normal_path):
 
