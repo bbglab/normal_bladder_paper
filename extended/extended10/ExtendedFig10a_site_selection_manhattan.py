@@ -4,6 +4,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import matplotlib.ticker as mticker
 
 sys.path.append('../../')
 from consensus_variables import deepcsa_run_dir
@@ -61,6 +62,9 @@ def axis_manhattan(s0,s1,s2,y_value,axis):
     else:
         axis.set_ylabel('Site selection')
         axis.set_xlabel('')
+    plt.gca().yaxis.set_major_formatter(mticker.StrMethodFormatter('{x:,.0f}'))
+
+
 
 
 def plot_manhattan(figure_output_dir,
