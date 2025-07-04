@@ -80,6 +80,82 @@ def add_dots_below_xticks(ax, dot_samples, offset = 28, size = 1.5, color = "bla
         if label in dot_samples:
             ax.plot(tick, offset, marker = 'o', color = color, markersize = size, 
                     clip_on = False, zorder = 10)
+            
+def prepare_twin_plot_data(data, clinvar,genes, def_colors, metric):
+    data = data[['gene','sample',metric,clinvar]].dropna()
+    data['color'] = data.apply(do_colors,args=(def_colors,clinvar,),axis=1)
+    return prepare_twin_sigmoid_plot(data, genes,clinvar,metric,def_colors)
+
+def prepare_twin_sigmoid_plot(data,genes,clinvar,metric,def_colors):
+    prepared_data = []
+    clinvar_categs = def_colors.keys()
+
+    for gene in genes:
+        for i, categ in enumerate(clinvar_categs):
+            if i == 0:
+                extra = 0
+            elif i == 1:
+                extra = 1
+            elif i == 2:
+                extra = 2.5
+
+            gene_data = data[(data['gene']==gene)&(data[clinvar]==categ)].sort_values(metric)
+            gene_data['y'] = gene_data[metric]
+            gene_data['x'] = np.linspace(0.1+extra,1+extra,len(gene_data))
+            prepared_data.append(gene_data)
+
+    return pd.concat(prepared_data)
+
+def do_colors(r,def_colors,clinvar):
+    return def_colors[r[clinvar]]
+
+def draw_vertical_sigmoid(axis,data,clinvar,def_colors,dot_size,linewidth):
+    clinvar_categs = def_colors.keys()
+    axis.scatter(data['x'], data['y'], color='white', zorder=3, lw=1, ec="white", s=dot_size)
+    axis.scatter(data['x'].values, data['y'].values, zorder=4,alpha=0.5, lw=0.1, ec=data['color'], s=dot_size*2, color=data['color'])
+
+    for categ in clinvar_categs:
+        axis.hlines(np.median(data[data[clinvar]==categ]['y'].values),
+                np.min(data[data[clinvar]==categ]['x'].values),
+                np.max(data[data[clinvar]==categ]['x'].values),
+                linewidth=linewidth,
+                color=def_colors[categ])
+
+def tidy_sigmoid_axis(axis,i,genes,gene_data,clinvar,def_colors,plot_config,plots_general_config,mode):
+    clinvar_categs = list(def_colors.keys())
+    if i == 0:
+        axis.spines[['top','right']].set_visible(False)
+        axis.set_ylabel(plot_config["ylabel"], fontsize = plots_general_config["xylabel_fontsize"])
+    else:
+        axis.spines[['top', 'right']].set_visible(False)
+        axis.set_ylabel('')
+
+    N_1 = len(gene_data[gene_data[clinvar]==clinvar_categs[0]])
+    N_2 = len(gene_data[gene_data[clinvar]==clinvar_categs[1]])
+
+    if mode == 'twin':
+        if len(clinvar_categs) == 2:
+            axis.set_xticks([0.5,1.5],[f'{clinvar_categs[0]}\n(N={str(N_1)})', f'{clinvar_categs[1]}\n(N={str(N_2)})'], fontsize = plots_general_config["xyticks_fontsize"])
+            axis.set_xlim([-0.1,2.1])
+        elif len(clinvar_categs) == 3:
+            N_3 = len(gene_data[gene_data[clinvar]==clinvar_categs[2]])
+            axis.set_xticks([0.5, 1.5, 3],
+                            [f'{clinvar_categs[0]}', f'{clinvar_categs[1]}', f'{clinvar_categs[2]}'],
+                            fontsize = plots_general_config["xyticks_fontsize"])
+            axis.text(0.5, axis.get_ylim()[1] + 0.05, f'N = {str(N_1)}', ha='center', fontsize=plots_general_config["xyticks_fontsize"])
+            axis.text(1.5, axis.get_ylim()[1] + 0.05, f'N = {str(N_2)}', ha='center', fontsize=plots_general_config["xyticks_fontsize"])
+            axis.text(3, axis.get_ylim()[1] + 0.05, f'N = {str(N_3)}', ha='center', fontsize=plots_general_config["xyticks_fontsize"])
+            axis.set_xlim([-0.1,3.6])
+        else:
+            print("this function only works with variables with two or three categories")
+    axis.set_xlabel(plot_config["xlabel"], fontsize = plots_general_config["xylabel_fontsize"])
+    if genes[i] in plot_config["titles"]:
+        gene4title = plot_config["titles"][genes[i]]
+    else:
+        gene4title = genes[i]
+
+    axis.set_title(gene4title, fontsize=plots_general_config["xylabel_fontsize"])
+    axis.tick_params(axis='y', labelsize=plots_general_config["xyticks_fontsize"])
     
 ## -- Main functions -- ##
 
@@ -103,7 +179,7 @@ def plot_double_heatmap(data, heatmap_config, save_file):
     cmap = heatmap_config["cmap"], 
     ax = axs[0],
     annot_kws = {"size": heatmap_config["annot_fontsize"]},
-    cbar = False)
+    cbar = False, xticklabels = True)
     add_age_triangle(axs[0], len(heatmap_config["h1_subset"]))
     duplicated_samples = [s for s in heatmap_config["duplicated_samples"] if s in heatmap_config["h1_subset"]]
     add_dots_below_xticks(axs[0], duplicated_samples)
@@ -114,7 +190,7 @@ def plot_double_heatmap(data, heatmap_config, save_file):
     axs[0].set_yticks(yticks_positions)
     axs[0].set_yticklabels(genes, rotation = 0, va = "center",
                             fontsize = heatmap_config["xyticks_fontsize"])
-    axs[0].tick_params(axis = 'x', labelsize = heatmap_config["xyticks_fontsize"])
+    axs[0].tick_params(axis = 'x', labelsize = heatmap_config["xyticks_fontsize"], rotation = 0)
     axs[0].set_xlabel(heatmap_config["h1_title"], fontsize = heatmap_config["title_fontsize"], fontweight = "bold")
 
     
@@ -126,7 +202,7 @@ def plot_double_heatmap(data, heatmap_config, save_file):
     cmap = heatmap_config["cmap"], 
     ax = axs[1],
     annot_kws = {"size": heatmap_config["annot_fontsize"]},
-    cbar = False)
+    cbar = False, xticklabels = True)
     add_age_triangle(axs[1], len(heatmap_config["h2_subset"]), 
                     add_text = True, text_fontsize = heatmap_config["annot_fontsize"])
     duplicated_samples = [s for s in heatmap_config["duplicated_samples"] if s in heatmap_config["h2_subset"]]
@@ -134,7 +210,7 @@ def plot_double_heatmap(data, heatmap_config, save_file):
 
     axs[1].set_yticks([])
     axs[1].set_yticklabels([])
-    axs[1].tick_params(axis = 'x', labelsize = heatmap_config["xyticks_fontsize"])
+    axs[1].tick_params(axis = 'x', labelsize = heatmap_config["xyticks_fontsize"], rotation = 0)
     axs[1].set_xlabel(heatmap_config["h2_title"], fontsize = heatmap_config["title_fontsize"], fontweight = "bold")
 
     # separate genes
@@ -446,84 +522,6 @@ def regr_res_coeffplot_multi(regrres_df_dict, plot_config, plots_general_config,
     plt.savefig(save_file, dpi = 300, bbox_inches = 'tight') #TODO: resolution to general config
 
     return None
-
-# below: Abel code to create sigmoid plots
-
-def prepare_twin_plot_data(data, clinvar,genes, def_colors, metric):
-    data = data[['gene','sample',metric,clinvar]].dropna()
-    data['color'] = data.apply(do_colors,args=(def_colors,clinvar,),axis=1)
-    return prepare_twin_sigmoid_plot(data, genes,clinvar,metric,def_colors)
-
-def prepare_twin_sigmoid_plot(data,genes,clinvar,metric,def_colors):
-    prepared_data = []
-    clinvar_categs = def_colors.keys()
-
-    for gene in genes:
-        for i, categ in enumerate(clinvar_categs):
-            if i == 0:
-                extra = 0
-            elif i == 1:
-                extra = 1
-            elif i == 2:
-                extra = 2.5
-
-            gene_data = data[(data['gene']==gene)&(data[clinvar]==categ)].sort_values(metric)
-            gene_data['y'] = gene_data[metric]
-            gene_data['x'] = np.linspace(0.1+extra,1+extra,len(gene_data))
-            prepared_data.append(gene_data)
-
-    return pd.concat(prepared_data)
-
-def do_colors(r,def_colors,clinvar):
-    return def_colors[r[clinvar]]
-
-def draw_vertical_sigmoid(axis,data,clinvar,def_colors,dot_size,linewidth):
-    clinvar_categs = def_colors.keys()
-    axis.scatter(data['x'], data['y'], color='white', zorder=3, lw=1, ec="white", s=dot_size)
-    axis.scatter(data['x'].values, data['y'].values, zorder=4,alpha=0.5, lw=0.1, ec=data['color'], s=dot_size*2, color=data['color'])
-
-    for categ in clinvar_categs:
-        axis.hlines(np.median(data[data[clinvar]==categ]['y'].values),
-                np.min(data[data[clinvar]==categ]['x'].values),
-                np.max(data[data[clinvar]==categ]['x'].values),
-                linewidth=linewidth,
-                color=def_colors[categ])
-
-def tidy_sigmoid_axis(axis,i,genes,gene_data,clinvar,def_colors,plot_config,plots_general_config,mode):
-    clinvar_categs = list(def_colors.keys())
-    if i == 0:
-        axis.spines[['top','right']].set_visible(False)
-        axis.set_ylabel(plot_config["ylabel"], fontsize = plots_general_config["xylabel_fontsize"])
-    else:
-        axis.spines[['top', 'right']].set_visible(False)
-        axis.set_ylabel('')
-
-    N_1 = len(gene_data[gene_data[clinvar]==clinvar_categs[0]])
-    N_2 = len(gene_data[gene_data[clinvar]==clinvar_categs[1]])
-
-    if mode == 'twin':
-        if len(clinvar_categs) == 2:
-            axis.set_xticks([0.5,1.5],[f'{clinvar_categs[0]}\n(N={str(N_1)})', f'{clinvar_categs[1]}\n(N={str(N_2)})'], fontsize = plots_general_config["xyticks_fontsize"]-2)
-            axis.set_xlim([-0.1,2.1])
-        elif len(clinvar_categs) == 3:
-            N_3 = len(gene_data[gene_data[clinvar]==clinvar_categs[2]])
-            axis.set_xticks([0.5, 1.5, 3],
-                            [f'{clinvar_categs[0]}', f'{clinvar_categs[1]}', f'{clinvar_categs[2]}'],
-                            fontsize = plots_general_config["xyticks_fontsize"])
-            axis.text(0.5, axis.get_ylim()[1] + 0.05, f'N = {str(N_1)}', ha='center', fontsize=plots_general_config["xyticks_fontsize"] - 2)
-            axis.text(1.5, axis.get_ylim()[1] + 0.05, f'N = {str(N_2)}', ha='center', fontsize=plots_general_config["xyticks_fontsize"] - 2)
-            axis.text(3, axis.get_ylim()[1] + 0.05, f'N = {str(N_3)}', ha='center', fontsize=plots_general_config["xyticks_fontsize"] - 2)
-            axis.set_xlim([-0.1,3.6])
-        else:
-            print("this function only works with variables with two or three categories")
-    axis.set_xlabel(plot_config["xlabel"], fontsize = plots_general_config["xylabel_fontsize"])
-    if genes[i] in plot_config["titles"]:
-        gene4title = plot_config["titles"][genes[i]]
-    else:
-        gene4title = genes[i]
-
-    axis.set_title(gene4title, fontsize=plots_general_config["title_fontsize"])
-    axis.tick_params(axis='y', labelsize=plots_general_config["xyticks_fontsize"])
 
 def plot_sigmoids(figure_output_file,
                 omega_data,
