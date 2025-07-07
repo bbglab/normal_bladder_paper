@@ -19,6 +19,12 @@ intogen_muts_path = os.path.join(intogen_path, "steps/vep")
 # intogen_path = f"{additional_data_dir}/20240409_ALL"
 # intogen_muts_path = f"{intogen_path}/steps/vep"
 
+# extended fig 9
+o3d_cancer_path = "/data/bbg/projects/clustering_3d/o3d_analysys/datasets/output/cancer_202404/o3d_output/human_mane_raw/run_2024-07-01_16-04-14"
+path_intogen_3dinput = "/data/bbg/projects/clustering_3d/o3d_analysys/datasets/input/cancer_202404"
+path_cancer_vep_all = f"{path_intogen_3dinput}/vep/"
+
+
 
 #TODO: add a metadata.tsv file in the repo with all the metadata compiled
 clinvars_file = f"{additional_data_dir}/20250516_metadata_bladder.with_depths.tsv"
