@@ -116,7 +116,7 @@ def main(deepCSA_directory):
     figure_output_dir = './plots'
 
     #File with cohort metadata
-    metadata_file = clinvars_regr_file
+    metadata_file = clinvars_file
 
     ref_genome_length = 3200
     ref_exome_length = 35
