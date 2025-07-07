@@ -1,0 +1,16 @@
+	is_male	had_prior_chemotherapy	history_smoking	bmi_scaled	age_decades	history_drinking
+ARID1A	0		0	0	0	0
+CDKN1A	0		0	0	0	
+CREBBP	0	0	0	0	0	
+EP300	0	0	0	0	0	
+FOXQ1	0		0	0	0	
+KDM6A	0		0	0	0	
+KMT2C	0	0	0	0	0	
+KMT2D	0		0	0	0	
+NOTCH2	0	0	0	0	0	
+RB1	0	0	0	0	0	
+RBM10	0		0	0	0	
+STAG2	0		0	0	0	
+TERTpromoter	0		0	0	0	
+TP53	0	0	0	0	0	
+total	0		0	0	0	

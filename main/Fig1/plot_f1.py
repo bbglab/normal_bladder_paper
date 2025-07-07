@@ -66,10 +66,11 @@ def cohort_descrp_plot(data_df, save_file, plot_config = {}):
         "metric_id2name": metric_id2name_ylabel,
         "barplot_color": "#FFC5B5",
         "figsize": (18, 4),
-        "height_ratios": [4, 4, 0.3, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6], #TODO: this can be better
+        "height_ratios": [4, 4, 0.3, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6], 
         "legend_fontsize": 8,
         "legend_fontweight": "bold",
         "xylabels_fontsize": 10,
+        "xyticks_fontsize": 8,
         "ylabels_pad": {"is_dome": 80, "AGE": 17,
                         "BMI": 17, "is_male": 17,
                         "smoking_status": 41,
@@ -83,7 +84,8 @@ def cohort_descrp_plot(data_df, save_file, plot_config = {}):
                         "history_drinking": [1.11, 7],
                         "had_prior_chemotherapy": [1.11, 5.5]},
         "legend_title_loc": {"AGE": -32,
-                            "BMI": -33}
+                            "BMI": -33},
+        "ncols_legend": 2
     }
     plot_config_dflt["samples_ordered"] = list(data_df[plot_config_dflt["sample_id"]].values)
     plot_config_dflt["dummy2clinvar"] = {v: k for k, v in clinvar2dummy.items()}
@@ -111,9 +113,10 @@ def cohort_descrp_plot(data_df, save_file, plot_config = {}):
             
             axs[i].set_xticklabels([])
             axs[i].tick_params(axis = 'x', which = 'both', length = 0)
+            axs[i].tick_params(axis = 'y', labelsize = plot_config["xyticks_fontsize"])
             axs[i].set_xlabel("")
             axs[i].set_ylabel(plot_config["metric_id2name"][var],
-                            fontsize = plot_config["xylabels_fontsize"])
+                            fontsize = plot_config["xyticks_fontsize"])
             axs[i].spines['top'].set_visible(False)
             axs[i].spines['right'].set_visible(False)
         
@@ -147,13 +150,15 @@ def cohort_descrp_plot(data_df, save_file, plot_config = {}):
             ax = axs[i], cbar = False, xticklabels = xticklabels, cmap = cmap)
             axs[i].set_xlabel("")
             axs[i].set_ylabel(plot_config["clinvar_id2name"][var_original], 
-                            fontsize = plot_config["xylabels_fontsize"], rotation = 0, 
+                            fontsize = plot_config["xyticks_fontsize"], rotation = 0, 
                             labelpad = plot_config["ylabels_pad"][var], loc = 'bottom')
             axs[i].set_yticklabels([])
 
 
     # sample names
-    axs[i].set_xticklabels(axs[i].get_xticklabels(), fontfamily = "monospace", fontsize = plot_config["xylabels_fontsize"])
+    axs[i].set_xticklabels(axs[i].get_xticklabels(), 
+                        # fontfamily = "monospace", 
+                        fontsize = plot_config["xyticks_fontsize"])
     ## highlight samples from the same donor
     color = plot_config["sample_highlight_color"]
     subject_id = ""
@@ -161,13 +166,13 @@ def cohort_descrp_plot(data_df, save_file, plot_config = {}):
         if label.get_text().split("_")[0] != subject_id:
             if color == plot_config["sample_highlight_color"]:
                 color = "white"
-                label.set_bbox(dict(facecolor = color, edgecolor = 'none', boxstyle = 'square,pad=0.3'))
+                label.set_bbox(dict(facecolor = color, edgecolor = 'none', boxstyle = 'square,pad=0.1'))
             elif color == "white":
                 color = plot_config["sample_highlight_color"]
-                label.set_bbox(dict(facecolor = color, edgecolor = 'none', boxstyle = 'square,pad=0.3'))
+                label.set_bbox(dict(facecolor = color, edgecolor = 'none', boxstyle = 'square,pad=0.1'))
             subject_id = label.get_text().split("_")[0]
         else:
-            label.set_bbox(dict(facecolor = color, edgecolor = 'none', boxstyle = 'square,pad=0.3'))
+            label.set_bbox(dict(facecolor = color, edgecolor = 'none', boxstyle = 'square,pad=0.1'))
             subject_id = label.get_text().split("_")[0]
 
     # legend depending on categorical or continuous var (different order so it fits)
@@ -181,7 +186,7 @@ def cohort_descrp_plot(data_df, save_file, plot_config = {}):
                 patches.append(mpatches.Patch(color = color,
                                             label = plot_config["clinvar_id2name"][categ]))
             legend = axs[i].legend(handles = patches, bbox_to_anchor = plot_config["legend_loc"][var], 
-                    title = plot_config["clinvar_id2name"][var_original], ncols = 2,
+                    title = plot_config["clinvar_id2name"][var_original], ncols = plot_config["ncols_legend"],
                     frameon = False, prop = {'size': plot_config["legend_fontsize"]},
                     title_fontproperties = FontProperties(weight = plot_config["legend_fontweight"],
                                                         size = plot_config["legend_fontsize"]))
@@ -210,17 +215,19 @@ def cohort_descrp_plot(data_df, save_file, plot_config = {}):
 
 
     # save 
-    plt.savefig(save_file, dpi = 300, bbox_inches = 'tight', bbox_extra_artists = legends_lst) #TODO: resolution to general config
+    plt.savefig(save_file, dpi = 300, bbox_inches = 'tight', bbox_extra_artists = legends_lst) 
 
     return fig
 
 def plot_mut_count_comparison(df_count,
                             figsize=(5, 4),
-                            color="#E0E0E0",
+                            barcolor="#E0E0E0",
                             save=False,
                             filename=None):
 
-    pivoted = df_count.pivot(index="Gene", columns="Type", values="SNVs").fillna(0)
+    pivoted = df_count.pivot(index="Gene", 
+                            columns="Type", 
+                            values="SNVs").fillna(0)
     pivoted = pivoted.sort_values(by="Cancer", ascending=True)
 
     fig, (ax_left, ax_right) = plt.subplots(
@@ -228,10 +235,11 @@ def plot_mut_count_comparison(df_count,
     )
 
     # Barplots
-    bars_left = ax_left.barh(pivoted.index, pivoted["Normal"], color="#E0E0E0")
-    bars_right = ax_right.barh(pivoted.index, pivoted["Cancer"], color="#E0E0E0")
+    bars_left = ax_left.barh(pivoted.index, pivoted["Normal"], color=barcolor)
+    bars_right = ax_right.barh(pivoted.index, pivoted["Cancer"], color=barcolor)
     ax_left.invert_xaxis() 
-    ax_left.tick_params(axis="y", labelleft=False, labelright=True, pad=35)
+    ax_left.tick_params(axis="y", labelleft=False, labelright=True, pad=14,
+                        labelsize = plots_general_config["yticks_fontsize"])
 
     # Add values to the bars
     for bar in bars_left:
@@ -241,7 +249,7 @@ def plot_mut_count_comparison(df_count,
             f'{int(bar.get_width())}',
             va='center', 
             ha='right',  
-            fontsize=8,
+            fontsize=plots_general_config["annots_fontsize"],
             color="black"
         )
     for bar in bars_right:
@@ -251,7 +259,7 @@ def plot_mut_count_comparison(df_count,
             f'{int(bar.get_width())}',  
             va='center',  
             ha='left',  
-            fontsize=8,
+            fontsize=plots_general_config["annots_fontsize"],
             color="black"
         )
 
@@ -260,8 +268,10 @@ def plot_mut_count_comparison(df_count,
         tick.set_horizontalalignment('center')
         
     ax_left.tick_params(left=False, right=True)
-    ax_left.set_xlabel("Number of mutations")
-    ax_right.set_xlabel("Number of mutations")
+    ax_left.tick_params(axis="x", labelsize=plots_general_config["xticks_fontsize"])
+    ax_right.tick_params(axis="x", labelsize=plots_general_config["xticks_fontsize"])
+    ax_left.set_xlabel("Number of SNVs", fontsize = plots_general_config["xlabel_fontsize"])
+    ax_right.set_xlabel("Number of SNVs", fontsize = plots_general_config["xlabel_fontsize"])
     ax_right.set_xlim([0, pivoted["Normal"].max()])
 
     ax_left.spines['left'].set_visible(False)
@@ -269,18 +279,16 @@ def plot_mut_count_comparison(df_count,
     ax_right.spines['top'].set_visible(False)
     ax_right.spines['right'].set_visible(False)
 
-    # ax_left.set_title(f"$\\mathbf{{Normal\\ bladder}}$\n{pivoted['Normal'].sum():,}", fontsize=10)
-    # ax_right.set_title(f"$\\mathbf{{Bladder\\ tumors}}$\n{pivoted['Cancer'].sum():,}", fontsize=10)
-    ax_left.set_title(f"$\\mathbf{{Normal\\ bladder}}$\nDonors: 45", fontsize=10)
-    ax_right.set_title(f"$\\mathbf{{Bladder\\ cancer}}$\nTumors: 892", fontsize=10)
-    plt.tight_layout()
+    ax_left.set_title(f"$\\mathbf{{Normal\\ bladder}}$\nDonors: 45", fontsize=plots_general_config["xlabel_fontsize"])
+    ax_right.set_title(f"$\\mathbf{{Bladder\\ cancer}}$\nTumors: 892", fontsize=plots_general_config["xlabel_fontsize"])
     
+    fig.subplots_adjust(wspace=0.5)
+
     if save and filename is not None:
-        fig.savefig(filename, dpi=300, bbox_inches='tight')
-    plt.show()
+        fig.savefig(filename, dpi=300, bbox_inches='tight', transparent=True)
 
 def plot_signature(profile_df, ax, ttype = "Frequency", add_contexts = False, text = None, textloc_x = 1,
-                fontfactor = 0, ylabel = ""):
+                ylabel = ""):
     """
     Args:
         profile_df: 96-array dataframe with contexts as index and 
@@ -334,8 +342,8 @@ def plot_signature(profile_df, ax, ttype = "Frequency", add_contexts = False, te
     ax.set_xlim([-0.5, 96])
     ymax = np.max(profile) * 1.2
     ax.set_ylim(0, ymax)  # Ensure space for labels above bars
-    ax.tick_params(axis = 'y', labelsize = 5+fontfactor)
-    ax.set_ylabel(ttype, fontsize = 6+fontfactor)
+    ax.tick_params(axis = 'y', labelsize = plots_general_config["xyticks_fontsize"])
+    ax.set_ylabel(ttype, fontsize = plots_general_config["xylabel_fontsize"])
 
     # add labels substitution ttype on top of the corresponding bars
     for i, mut in enumerate(mut2color.keys()):
@@ -345,15 +353,20 @@ def plot_signature(profile_df, ax, ttype = "Frequency", add_contexts = False, te
         rect = patches.Rectangle((x_pos - 7.5, y_pos - y_pos/20), 15.5, y_pos/15,
                                 color = mut2color[mut], clip_on = False)
         ax.add_patch(rect)
-        ax.text(x_pos, y_pos+y_pos/12, mut, color = 'black',
-                ha = 'center', va = 'center', fontsize = 7+fontfactor, 
-                fontweight = 'bold')
+        ax.text(
+            x_pos, y_pos + y_pos / 12, mut,
+            color='black',
+            ha='center', va='center',
+            fontsize=plots_general_config["xylabel_fontsize"],
+            fontweight='bold',
+            fontfamily='Arial'
+        )
 
     # add contexts if needed
     if add_contexts:
         minor_ticks = np.arange(0.2, 96.2, 1)
         ax.set_xticks(minor_ticks)
-        ax.set_xticklabels(minor_tick_labels(), rotation = 90, fontsize = 5+fontfactor)
+        ax.set_xticklabels(minor_tick_labels(), rotation = 90, fontsize = plots_general_config["annots_fontsize"])
     else:
         ax.set_xticklabels([])
         ax.tick_params(axis = 'x', length = 0)
@@ -364,6 +377,6 @@ def plot_signature(profile_df, ax, ttype = "Frequency", add_contexts = False, te
     # add extra info if needed
     if text:
         ax.text(textloc_x, ymax - ymax / 10, text, color = 'black',
-                ha = 'left', va = 'top', fontsize = 6+fontfactor)
+                ha = 'left', va = 'top', fontsize = plots_general_config["annots_fontsize"])
 
     return ax

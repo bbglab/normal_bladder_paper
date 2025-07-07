@@ -3,8 +3,7 @@ import pandas as pd
 import numpy as np
 import os
 
-# sys.path.append('../..') 
-sys.path.append('/data/bbg/projects/bladder_ts/notebooks/manuscript_figures_vMarch2025') 
+sys.path.append('../..') 
 from consensus_variables import * 
 
 ## -- Auxiliary -- ##
@@ -121,6 +120,9 @@ def get_broad_consequence(list_of_annotations):
 
 def load_cohort_data(clinvars_file, muts_file, mutrate_file):
     """
+    Loads files containing mutations, mutation rate data
+    and clinical data and merge them to generate the input
+    for the cohort summary plot
     """
     
     # load maf file and count number of muts per sample
@@ -174,18 +176,21 @@ def load_cohort_data(clinvars_file, muts_file, mutrate_file):
 
     return cohort_df
 
-def get_cancer_maf_cohort(path_vep_out, lst_genes=None, only_protein_pos=True):
+def get_cancer_maf_cohort(path_vep_out, lst_genes = None):
+    """
+    Gets SNVs and indels from a VEP annotated MAF file for
+    a specific set of genes. If only_protein_pos = True,
+    filters out mutations that are not protein coding
+    """
     
+    # load VEP annotated MAF
     columns_to_load = ["SYMBOL", "Location", "Protein_position", "Feature", "Consequence"]
-    vep_cohort = pd.read_table(path_vep_out, usecols=columns_to_load, low_memory=False)
+    vep_cohort = pd.read_table(path_vep_out, usecols = columns_to_load, low_memory = False)
+
+    # keep selected genes (if applicable)
     if lst_genes is not None:
         vep_cohort = vep_cohort[vep_cohort["SYMBOL"].isin(lst_genes)]
     vep_cohort = vep_cohort[vep_cohort["SYMBOL"] != "-"].reset_index(drop=True)
-    
-    
-    # here we are removing the mutations that are in splice sites
-    if only_protein_pos:
-        vep_cohort = vep_cohort[vep_cohort["Protein_position"] != "-"].reset_index(drop=True)
         
     cols = ["SYMBOL", "Feature", "Location", "Protein_position", "Consequence"]
     vep_cohort = vep_cohort[cols].rename(columns={"SYMBOL" : "Gene", 
@@ -194,15 +199,21 @@ def get_cancer_maf_cohort(path_vep_out, lst_genes=None, only_protein_pos=True):
     
     return vep_cohort
 
-def get_cancer_maf_all(cohort_df, path_all_vep_out, lst_genes=None, only_protein_pos=True):
+def get_cancer_maf_all(cohort_df, path_all_vep_out, lst_genes = None):
+    """
+    Gets SNVs and indels from VEP files
+    of a set of IntoGen cohorts. Keeps only
+    mutations in specific genes. If only_protein_pos = True,
+    filters out mutations that are not protein coding
+    """
     
+    # iterate through intogen cohorts and load VEP annotated MAF
     lst_vep_out = []
     for cohort, ttype in cohort_df[["COHORT", "CANCER_TYPE"]].values:
-        print(cohort)
         path_vep = f"{path_all_vep_out}/{cohort}.tsv.gz"
         if os.path.exists(path_vep):
 
-            vep_cohort = get_cancer_maf_cohort(path_vep, lst_genes, only_protein_pos)
+            vep_cohort = get_cancer_maf_cohort(path_vep, lst_genes)
             vep_cohort["Cohort"] = cohort
             vep_cohort["Cancer_type"] = ttype
             lst_vep_out.append(vep_cohort)
@@ -210,64 +221,43 @@ def get_cancer_maf_all(cohort_df, path_all_vep_out, lst_genes=None, only_protein
             print(f"Path {path_vep} doesn't exist: Skipping..")
     
     df = pd.concat(lst_vep_out).reset_index(drop=True)
-    df.Pos = df.Pos.apply(lambda x: 
-                        int(x) if len(x.split("-")) == 1 else 
-                        np.nan if (x.split("-")[0] == "?" or x.split("-")[0] == "") 
-                        else int(x.split("-")[0]))
-    if only_protein_pos:
-        df = df.dropna(subset="Pos").reset_index(drop=True)
-        df.Pos= df.Pos.astype(int)
     
-    # Ensure that all indels (including frameshift) are mapped to indels and not nonsense
-    df["INDEL_INFRAME"] = False
-    df.loc[(df["Consequence"] == 'inframe_insertion') | (df["Consequence"] == 'inframe_deletion'), "INDEL_INFRAME"] = True
-    
-    # FIXME
-    # this redefinition here looks dangerous to me
+    # rename frameshift variants to indel
     df["Consequence"] = df["Consequence"].replace("frameshift_variant", "inframe_insertion") 
     df["Consequence"] = get_broad_consequence(df["Consequence"])
     
-    # Parse DNA location
+    # parse DNA location
     df["Chr"] = df.Location.apply(lambda x: f'chr{x.split(":")[0]}')
     df["Location"] = df.Location.apply(lambda x: x.split(":")[1])
     df["DNA_pos"] = df.Location.apply(lambda x: int(x.split("-")[0]))
     
     return df.drop(columns=["Location"])
 
-def get_normal_maf(path_maf, lst_genes, only_protein_pos=True):
+def get_normal_maf(path_maf, lst_genes, only_protein_pos = True):
+    """
+    Gets SNVs and indels from a MAF file for
+    a specific set of genes. If only_protein_pos = True,
+    filters out mutations that are not protein coding 
+    """
     
+    # read MAF
     maf_df = pd.read_table(path_maf)
     print(f"Total number of somatic mutations in the consensus panel: {len(maf_df)}")
 
+    # filter genes of interest
     maf_df_f = maf_df.loc[(maf_df["canonical_SYMBOL"].isin(lst_genes))].reset_index(drop = True)
     print(f"\tMutations in selected genes: {len(maf_df_f)}")
 
+    # keep SNVs and indels only
     maf_df_f = maf_df_f[(maf_df_f["TYPE"].isin(["SNV", "INSERTION", "DELETION"]))
                     ].reset_index(drop = True)
     print(f"\tSNVs and indels: {len(maf_df_f)}")
     
-    if only_protein_pos:
-        maf_df_f = maf_df_f[ maf_df_f["canonical_Protein_position"] != '-' ]
-        print(maf_df_f.shape, 'after filtering for mutations without Protein position')
-        
-    # print(maf_df_f[maf_df_f["canonical_Protein_affecting"] == 'protein_affecting'
-    #             ].shape, 'if we were filtering for protein_affecting mutations')
-
-    # print(maf_df_f[(maf_df_f["TYPE"] == 'SNV')
-    #             ].shape, 'if we were filtering for SNVs only')
-
-    # print(maf_df_f[(maf_df_f["TYPE"] != 'SNV')
-    #             ].shape, 'if we were filtering for indels only')
-
-    # print(maf_df_f[(maf_df_f["canonical_Protein_affecting"] == 'protein_affecting') &
-    #             (maf_df_f["TYPE"] == 'SNV')
-    #             ].shape, 'if we were filtering for protein_affecting SNVs')
-    
+    # rename some consequence types
     maf_df_f.loc[(maf_df_f["TYPE"].isin(["INSERTION", "DELETION"])), "canonical_Consequence_broader"] = "indel"
-    maf_df_f.canonical_Consequence_broader = maf_df_f.canonical_Consequence_broader.replace("splice_region_variant", "splicing")
-    maf_df_f.canonical_Consequence_broader = maf_df_f.canonical_Consequence_broader.replace("essential_splice", "splicing")
+    maf_df_f["canonical_Consequence_broader"] = maf_df_f["canonical_Consequence_broader"].replace("splice_region_variant", "splicing")
+    maf_df_f["canonical_Consequence_broader"] = maf_df_f["canonical_Consequence_broader"].replace("essential_splice", "splicing")
     
-    # Parse
     cols = ["canonical_SYMBOL", "canonical_Feature", "canonical_Protein_position",
             "canonical_Consequence_broader", "CHROM", "POS", "DEPTH", "ALT_DEPTH"]
     maf_df_f = maf_df_f[cols].rename(columns={"canonical_SYMBOL" : "Gene", 
@@ -276,13 +266,5 @@ def get_normal_maf(path_maf, lst_genes, only_protein_pos=True):
                                             "canonical_Consequence_broader" : "Consequence",
                                             "CHROM" : "CHR",
                                             "POS" : "DNA_POS"})
-
-    maf_df_f.Pos = maf_df_f.Pos.apply(lambda x: 
-                                    int(x) if len(x.split("-")) == 1 else 
-                                    np.nan if (x.split("-")[0] == "?" or x.split("-")[0] == "") 
-                                    else int(x.split("-")[0]))
-    if only_protein_pos:
-        maf_df_f = maf_df_f.dropna(subset=["Pos"]).reset_index(drop=True)
-        maf_df_f.Pos= maf_df_f.Pos.astype(int)
     
     return maf_df_f
