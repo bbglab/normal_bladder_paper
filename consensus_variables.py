@@ -1,12 +1,37 @@
 import json
 import matplotlib as mpl
+import os
 
-mpl.rcParams.update({
-    'font.family': 'Arial',            # Enforce Arial
-    'pdf.fonttype': 42,                # TrueType for PDF
-    'ps.fonttype': 42,                 # TrueType for PS/EPS
-    'svg.fonttype': 'none',            # Keep text as editable text
-})
+# paths
+all_data_path="/data/bbg/nobackup/bladder_ts/bladder_paper_data"
+
+additional_data_dir = f"{all_data_path}/additional_data"
+
+deepcsa_run_dir = f"{all_data_path}/deepCSA_outputs"
+
+maf_file = f"{deepcsa_run_dir}/germline_somatic/all_samples.filtered.tsv.gz"
+clean_maf_file = f"{deepcsa_run_dir}/clean_germline_somatic/all_samples.clean.mutations.tsv"
+somatic_maf_file = f"{deepcsa_run_dir}/clean_somatic/all_samples.somatic.mutations.tsv"
+
+# FIXME this cannot be shared for now since it contains information from the specific mutated samples
+intogen_path = "/data/bbg/datasets/intogen/output/runs/v2024/20240409_ALL" # TODO: add this data in the repo somewhere differently from deepcsa files
+intogen_muts_path = os.path.join(intogen_path, "steps/vep")
+# intogen_path = f"{additional_data_dir}/20240409_ALL"
+# intogen_muts_path = f"{intogen_path}/steps/vep"
+
+
+#TODO: add a metadata.tsv file in the repo with all the metadata compiled
+clinvars_file = f"{additional_data_dir}/20250516_metadata_bladder.with_depths.tsv"
+
+
+# oncodrive3d datasets
+## TODO, make sure that this are absolute paths to the datasets
+o3d_alt_datasets = f"{additional_data_dir}/datasets_240506" # These "alt" are used to retrieve annotations in equivalent Uniprot ID that are missing in the MANE related ones
+o3d_datasets = f"{additional_data_dir}/datasets_mane_240506"
+o3d_annotations = f"{additional_data_dir}/annotations_mane_240506"
+
+pfam_domains_file = f"{o3d_annotations}/uniprot_feat.tsv"
+
 
 
 def load_samples_info(rundir):
@@ -56,22 +81,6 @@ single_sample_per_donor = ['01_TR', '02_TR', '03_DO', '04_TR', '05_TR', '06_DO',
 
 females_age_ordered = ['33', '52', '43', '12', '06', '30', '20', '38', '09', '41', '19', '25', '05', '13', '02', '03', '29']
 males_age_ordered = ['36', '01', '24', '31', '27', '40', '47', '50', '04', '26', '14', '35', '46', '11', '48', '28', '07', '15', '08', '34', '53', '39', '16', '51', '23', '45', '42', '18']
-
-# paths
-origin_dir = '/data/bbg'
-bladder_results = f"{origin_dir}/nobackup/bladder_ts/results"
-deepcsa_run_dir = f"{bladder_results}/2025-05-14_deepCSA_45_donors"
-maf_file = f"{deepcsa_run_dir}/germline_somatic/all_samples.filtered.tsv.gz"
-clean_maf_file = f"{deepcsa_run_dir}/clean_germline_somatic/all_samples.clean.mutations.tsv"
-somatic_maf_file = f"{deepcsa_run_dir}/clean_somatic/all_samples.somatic.mutations.tsv"
-
-clinvars_file = f"{origin_dir}/projects/bladder_ts/data/complete_cohort/samples_metadata/20250516_metadata_bladder.with_depths.tsv" #TODO: add a metadata.tsv file in the repo with all the metadata compiled
-
-# oncodrive3d datasets
-## TODO, make sure that this are absolute paths to the datasets
-o3d_alt_datasets = "/data/bbg/nobackup/scratch/oncodrive3d/datasets_240506" # These "alt" are used to rerieve annotations in equivalent Uniprot ID that are missing in the MANE related ones
-o3d_datasets = "/data/bbg/nobackup/scratch/oncodrive3d/datasets_mane_240506"
-o3d_annotations = "/data/bbg/nobackup/scratch/oncodrive3d/annotations_mane_240506"
 
 
 
@@ -197,6 +206,11 @@ metric_id2name_title = {
    "": ""
 }
 
+
+####
+# colors
+####
+
 # color dictionaries
 gene2color = {
  'KMT2D': '#fa6c8b',
@@ -267,31 +281,40 @@ clinvar2color = {
    }
 }
 
+####
+# clinvars
+####
+
 metrics_colors_dictionary = {"ofml"        : "viridis_r",
-                             "ofml_score"  : "#6A33E0",
-                             "omega_trunc" : "#FA5E32",
-                             "omega_synon" : "#89E4A2",
-                             "omega_miss"  : "#FABE4A",
-                             "o3d_score"   : "#6DBDCC",
-                             "o3d_cluster" : "skyblue",
-                             "o3d_prob"    : "darkgray",
-                             "frameshift"  : "#E4ACF4",
-                             "inframe"     : "C5",
-                             "hv_lines"    : "lightgray", # horizontal and vertical lines,
-                             "hv_lines_needle" : "gray",
-                             "needle_obs"  : "#003366",
-                             "omega_miss_tert" : "#f5840c",
-                             "omega_synon_tert": "#378c12",
-                             "nonsense" : "#FA5E32",
-                             "synonymous" : "#89E4A2",
-                             "missense"  : "#FABE4A",
-                             #"nonsense"    : "#FB8E6F",  
-                             # "synonymous"  : "#ACECBD", 
-                             #"missense"    : "#FBD180", 
-                             "indel"       : "#ECC4F7", 
-                             "splicing"    : "#A1C5DF",
-                            }
-# plot configs
+                              "ofml_score"  : "#6A33E0",
+                              "omega_trunc" : "#FA5E32",
+                              "omega_synon" : "#89E4A2",
+                              "omega_miss"  : "#FABE4A",
+                              "o3d_score"   : "#6DBDCC",
+                              "o3d_cluster" : "skyblue",
+                              "o3d_prob"    : "darkgray",
+                              "frameshift"  : "#E4ACF4",
+                              "inframe"     : "C5",
+                              "hv_lines"    : "lightgray", # horizontal and vertical lines,
+                              "hv_lines_needle" : "gray",
+                              "needle_obs"  : "#003366",
+                              "omega_miss_tert" : "#f5840c",
+                              "omega_synon_tert": "#378c12",
+                              "nonsense" : "#FA5E32",
+                              "synonymous" : "#89E4A2",
+                              "missense"  : "#FABE4A",
+                              #"nonsense"    : "#FB8E6F",  
+                              # "synonymous"  : "#ACECBD", 
+                              #"missense"    : "#FBD180", 
+                              "indel"       : "#ECC4F7", 
+                              "splicing"    : "#A1C5DF",
+                              }
+
+
+####
+# plotting configurations
+####
+
 plots_general_config = {
 
                         # fonsizes
@@ -315,19 +338,20 @@ plots_general_config = {
                         "dot_edgewidth_coeffplot": 0.5
                         }
 
-plot_fontsizes_general_config = {
-                                 "tick_labels_fontsize"     : 5,
-                                 "legend_labels_fontsize"   : 5,
-                                 "axis_labels_fontsize"     : 6,
-                                 "title_fontsize"           : 7,
-                                 "custom_text_fontsize"     : 5,
-}
 
 mpl.rcParams.update({
-    'axes.titlesize': plot_fontsizes_general_config["title_fontsize"],        # Title font size
-    'axes.labelsize': plot_fontsizes_general_config["axis_labels_fontsize"],        # X and Y axis labels
-    'xtick.labelsize': plot_fontsizes_general_config["tick_labels_fontsize"],       # X tick labels
-    'ytick.labelsize': plot_fontsizes_general_config["tick_labels_fontsize"],       # Y tick labels
-    'legend.fontsize': plot_fontsizes_general_config["legend_labels_fontsize"],       # Legend text
-    'figure.titlesize': plot_fontsizes_general_config["title_fontsize"],      # Figure suptitle (if used)
+   'font.family': 'Arial',            # Enforce Arial
+   'pdf.fonttype': 42,                # TrueType for PDF
+   'ps.fonttype': 42,                 # TrueType for PS/EPS
+   'svg.fonttype': 'none',            # Keep text as editable text
+})
+
+
+mpl.rcParams.update({
+   'axes.titlesize'    : plots_general_config["title_fontsize"],       # Title font size
+   'axes.labelsize'    : plots_general_config["xylabel_fontsize"],     # X and Y axis labels
+   'xtick.labelsize'   : plots_general_config["xyticks_fontsize"],     # X tick labels
+   'ytick.labelsize'   : plots_general_config["xyticks_fontsize"],     # Y tick labels
+   'legend.fontsize'   : plots_general_config["legend_fontsize"],      # Legend text
+   'figure.titlesize'  : plots_general_config["title_fontsize"],       # Figure suptitle (if used)
 })
