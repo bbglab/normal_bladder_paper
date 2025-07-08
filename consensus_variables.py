@@ -13,17 +13,15 @@ maf_file = f"{deepcsa_run_dir}/germline_somatic/all_samples.filtered.tsv.gz"
 clean_maf_file = f"{deepcsa_run_dir}/clean_germline_somatic/all_samples.clean.mutations.tsv"
 somatic_maf_file = f"{deepcsa_run_dir}/clean_somatic/all_samples.somatic.mutations.tsv"
 
-# FIXME this cannot be shared for now since it contains information from the specific mutated samples
-intogen_path = "/data/bbg/datasets/intogen/output/runs/v2024/20240409_ALL" # TODO: add this data in the repo somewhere differently from deepcsa files
+# FIXME this cannot be shared for now since it contains information from the specific mutated samples 
+#    due to this, figures 1b, 9b and 9d cannot be fully regenerated, we will soon provide an updated
+#    version of the dataset so that this is possible
+intogen_path = "/data/bbg/datasets/intogen/output/runs/v2024/20240409_ALL" 
 intogen_muts_path = os.path.join(intogen_path, "steps/vep")
-# intogen_path = f"{additional_data_dir}/20240409_ALL"
-# intogen_muts_path = f"{intogen_path}/steps/vep"
+
 
 # extended fig 9
-o3d_cancer_path = "/data/bbg/projects/clustering_3d/o3d_analysys/datasets/output/cancer_202404/o3d_output/human_mane_raw/run_2024-07-01_16-04-14"
-path_intogen_3dinput = "/data/bbg/projects/clustering_3d/o3d_analysys/datasets/input/cancer_202404"
-path_cancer_vep_all = f"{path_intogen_3dinput}/vep/"
-
+o3d_cancer_path = f"{additional_data_dir}/oncodrive3d_results"
 
 
 #TODO: add a metadata.tsv file in the repo with all the metadata compiled
@@ -31,7 +29,6 @@ clinvars_file = f"{additional_data_dir}/20250516_metadata_bladder.with_depths.ts
 
 
 # oncodrive3d datasets
-## TODO, make sure that this are absolute paths to the datasets
 o3d_alt_datasets = f"{additional_data_dir}/datasets_240506" # These "alt" are used to retrieve annotations in equivalent Uniprot ID that are missing in the MANE related ones
 o3d_datasets = f"{additional_data_dir}/datasets_mane_240506"
 o3d_annotations = f"{additional_data_dir}/annotations_mane_240506"
@@ -61,7 +58,7 @@ def load_samples_info(rundir):
 
 # Sample names
 all_sample_names_dirty = ['P19_0001_BDO_01', 'P19_0001_BTR_01', 'P19_0002_BDO_01', 'P19_0002_BTR_01', 'P19_0003_BDO_01', 'P19_0004_BDO_01', 'P19_0004_BTR_01', 'P19_0005_BDO_01', 'P19_0005_BTR_01', 'P19_0006_BDO_01', 'P19_0007_BDO_01', 'P19_0007_BTR_01', 'P19_0008_BDO_01', 'P19_0008_BTR_01', 'P19_0009_BDO_01', 'P19_0009_BTR_01',
-                          'P19_0011_BDO_01', 'P19_0011_BTR_01', 'P19_0012_BDO_01', 'P19_0012_BTR_01', 'P19_0013_BDO_01', 'P19_0013_BTR_01', 'P19_0014_BDO_01', 'P19_0014_BTR_01', 'P19_0015_BDO_01', 'P19_0015_BTR_01', 'P19_0016_BDO_01', 'P19_0016_BTR_01', 'P19_0018_BDO_01', 'P19_0018_BTR_01', 'P19_0019_BDO_01', 'P19_0019_BTR_01', 'P19_0020_BDO_01', 'P19_0020_BTR_01', 'P19_0023_BDO_01', 'P19_0023_BTR_01', 'P19_0024_BDO_01', 'P19_0024_BTR_01', 'P19_0025_BDO_01', 'P19_0025_BTR_01', 'P19_0026_BDO_01', 'P19_0026_BTR_01', 'P19_0027_BTR_01', 'P19_0028_BDO_01', 'P19_0028_BTR_01', 'P19_0029_BDO_01', 'P19_0029_BTR_01', 'P19_0030_BTR_01', 'P19_0031_BTR_01', 'P19_0033_BDO_01', 'P19_0033_BTR_01', 'P19_0034_BDO_01', 'P19_0034_BTR_01', 'P19_0035_BDO_01', 'P19_0036_BTR_01', 'P19_0038_BDO_01', 'P19_0039_BTR_01', 'P19_0040_BDO_01', 'P19_0040_BTR_01', 'P19_0041_BDO_01', 'P19_0041_BTR_01', 'P19_0042_BDO_01', 'P19_0042_BTR_01', 'P19_0043_BTR_01', 'P19_0045_BDO_01', 'P19_0045_BTR_01', 'P19_0046_BDO_01', 'P19_0046_BTR_01', 'P19_0047_BDO_01', 'P19_0047_BTR_01', 'P19_0048_BTR_01',
+                           'P19_0011_BDO_01', 'P19_0011_BTR_01', 'P19_0012_BDO_01', 'P19_0012_BTR_01', 'P19_0013_BDO_01', 'P19_0013_BTR_01', 'P19_0014_BDO_01', 'P19_0014_BTR_01', 'P19_0015_BDO_01', 'P19_0015_BTR_01', 'P19_0016_BDO_01', 'P19_0016_BTR_01', 'P19_0018_BDO_01', 'P19_0018_BTR_01', 'P19_0019_BDO_01', 'P19_0019_BTR_01', 'P19_0020_BDO_01', 'P19_0020_BTR_01', 'P19_0023_BDO_01', 'P19_0023_BTR_01', 'P19_0024_BDO_01', 'P19_0024_BTR_01', 'P19_0025_BDO_01', 'P19_0025_BTR_01', 'P19_0026_BDO_01', 'P19_0026_BTR_01', 'P19_0027_BTR_01', 'P19_0028_BDO_01', 'P19_0028_BTR_01', 'P19_0029_BDO_01', 'P19_0029_BTR_01', 'P19_0030_BTR_01', 'P19_0031_BTR_01', 'P19_0033_BDO_01', 'P19_0033_BTR_01', 'P19_0034_BDO_01', 'P19_0034_BTR_01', 'P19_0035_BDO_01', 'P19_0036_BTR_01', 'P19_0038_BDO_01', 'P19_0039_BTR_01', 'P19_0040_BDO_01', 'P19_0040_BTR_01', 'P19_0041_BDO_01', 'P19_0041_BTR_01', 'P19_0042_BDO_01', 'P19_0042_BTR_01', 'P19_0043_BTR_01', 'P19_0045_BDO_01', 'P19_0045_BTR_01', 'P19_0046_BDO_01', 'P19_0046_BTR_01', 'P19_0047_BDO_01', 'P19_0047_BTR_01', 'P19_0048_BTR_01',
 # new samples
 'P19_0050_BDO_01', 'P19_0050_BTR_01', 'P19_0051_BDO_01','P19_0051_BTR_01',
 'P19_0052_BDO_01', 'P19_0052_BTR_01', 'P19_0053_BDO_01', 'P19_0053_BTR_01']

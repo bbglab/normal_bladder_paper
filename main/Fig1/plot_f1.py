@@ -1,5 +1,4 @@
-import pandas as pd
-import os
+
 import re
 import numpy as np
 import sys
@@ -12,8 +11,7 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import matplotlib.patches as patches
 
 
-# sys.path.append('../..') 
-sys.path.append('/data/bbg/projects/bladder_ts/notebooks/manuscript_figures_vMarch2025') 
+sys.path.append('../..') 
 from consensus_variables import * 
 
 ## -- Auxiliary -- ##

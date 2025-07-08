@@ -10,10 +10,10 @@ import click
 import numpy as np
 import pandas as pd
 
+sys.path.append('../../')
+from consensus_variables import *
 
 # Constants
-
-deepCSA_folder = '/data/bbg/nobackup/bladder_ts/results/2025-05-14_deepCSA_45_donors'
 subsampling_rates = np.logspace(-2, np.log10(0.9), num=20)
 
 
@@ -27,7 +27,7 @@ def prob_min_uniform_sample_below_cut(N, n, cut):
 
 def load_mutations():
 
-    somatic_mutations_file = f'{deepCSA_folder}/clean_somatic/all_samples.somatic.mutations.tsv'
+    somatic_mutations_file = f'{deepcsa_run_dir}/clean_somatic/all_samples.somatic.mutations.tsv'
     somatic_mutations = pd.read_csv(somatic_mutations_file, sep='\t', low_memory=False)
     mutations = somatic_mutations[
         ~(somatic_mutations['FILTER'].str.contains("not_in_exons"))
@@ -51,7 +51,7 @@ def get_aachange_format(r):
         
 def collect_vep():
     
-    fn = os.path.join(deepCSA_folder, 'createpanels', 'panelannotation', 'captured_panel.tab.gz')
+    fn = os.path.join(deepcsa_run_dir, 'createpanels', 'panelannotation', 'captured_panel.tab.gz')
     vep_panel = pd.read_csv(fn, sep='\t', skiprows=44)
     dg = vep_panel[['#Uploaded_variation', 'Protein_position', 'Amino_acids', 'SYMBOL', 'CANONICAL']]
     dg = dg[dg['CANONICAL'] == 'YES']
@@ -66,8 +66,8 @@ def collect_vep():
 
 def load_panel(vep_annotations):
 
-    df_panel = pd.read_csv(os.path.join(deepCSA_folder, 'createpanels', 'consensuspanels', 'consensus.exons_splice_sites.tsv'), sep='\t')
-    df_depth = pd.read_csv(os.path.join(deepCSA_folder, 'annotatedepths', f'all_samples.depths.annotated.tsv.gz'), sep='\t')
+    df_panel = pd.read_csv(os.path.join(deepcsa_run_dir, 'createpanels', 'consensuspanels', 'consensus.exons_splice_sites.tsv'), sep='\t')
+    df_depth = pd.read_csv(os.path.join(deepcsa_run_dir, 'annotatedepths', f'all_samples.depths.annotated.tsv.gz'), sep='\t')
     df_panel = pd.merge(df_panel, df_depth[['CHROM', 'POS', 'all_samples']], on=['CHROM', 'POS'], how='left')
     df_panel.rename(columns={'all_samples': 'DEPTH'}, inplace=True)
     df_panel = pd.merge(df_panel, vep_annotations[['CHROM', 'POS', 'REF', 'ALT', 'AACHANGE', 'SYMBOL']], 
