@@ -33,12 +33,15 @@ def load_lmem_pred(clinvar, res_dir, metric, obsdata_df = None, sign_threshold =
     pvals_df = res_dfs_dict["multivariateME.pvals"].combine_first(res_dfs_dict["univariateME.pvals"])
     lowi_df = res_dfs_dict["multivariateME.lowi"].combine_first(res_dfs_dict["univariateME.lowi"])
     highi_df = res_dfs_dict["multivariateME.highi"].combine_first(res_dfs_dict["univariateME.highi"])
-    res_df = interc_df[[clinvar]].merge(
-        coeffs_df[[clinvar]], right_index = True, left_index = True, how = "outer").merge(
-        pvals_df[[clinvar]], right_index = True, left_index = True, how = "outer").merge(
-        lowi_df[[clinvar]], right_index = True, left_index = True, how = "outer").merge(
-        highi_df[[clinvar]], right_index = True, left_index = True, how = "outer")
-    res_df.columns = ["intercept", "coeff", "qval", "lowci", "highci"]
+    res_df = interc_df[[clinvar]].rename({clinvar: "intercept"}, axis = 1).merge(
+        coeffs_df[[clinvar]].rename({clinvar: "coeff"}, axis = 1),
+        right_index = True, left_index = True, how = "outer").merge(
+        pvals_df[[clinvar]].rename({clinvar: "qval"}, axis = 1),
+        right_index = True, left_index = True, how = "outer").merge(
+        lowi_df[[clinvar]].rename({clinvar: "lowci"}, axis = 1), 
+        right_index = True, left_index = True, how = "outer").merge(
+        highi_df[[clinvar]].rename({clinvar: "highci"}, axis = 1), 
+        right_index = True, left_index = True, how = "outer")
     res_df = res_df.reset_index(names = "gene")
 
     # calculate LMEM predictions if observed data is given
