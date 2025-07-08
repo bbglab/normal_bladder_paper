@@ -13,7 +13,7 @@ import matplotlib.patches as patches
 
 
 # sys.path.append('../..') 
-sys.path.append('/data/bbg/projects/bladder_ts/notebooks/manuscript_figures_vMarch2025') 
+sys.path.append('../..')  
 from consensus_variables import * 
 
 ## -- Auxiliary -- ##
