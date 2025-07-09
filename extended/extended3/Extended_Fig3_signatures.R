@@ -5,7 +5,7 @@ library(gridExtra)
 library(grid)
 library(cowplot)
 
-deepCSA_run <- "2025-05-14_deepCSA_45_donors"
+deepCSA_run <- "/data/bbg/nobackup/bladder_ts/results/2025-05-14_deepCSA_45_donors"
 outplot <- file.path("./plots/Extended_Fig3_signatures.png")
 
 plot_sig_profiles <- function(deepCSA_run, extraction_method){
@@ -15,7 +15,7 @@ plot_sig_profiles <- function(deepCSA_run, extraction_method){
         df <-  read.table(sig_path, sep="\t", header=TRUE, row.names=1)
         sigs_names <- c("SBS96A","SBS96B","SBS96C")
     }else{
-        sig_path <- paste("/workspace/nobackup/bladder_ts/results/", deepCSA_run, "/signatures_hdp/samples_matrix.all.compared_output_dir/signatures.txt", sep="")
+        sig_path <- paste(deepCSA_run, "/signatures_hdp/samples_matrix.all.compared_output_dir/signatures.txt", sep="")
         df <- read.table(sig_path, sep="\t", header=TRUE, row.names=1)
         sigs_names <- c("N1","N3","N2", "N4","N5")
 
@@ -59,7 +59,7 @@ plot_sig_profiles <- function(deepCSA_run, extraction_method){
             axis.title.x=element_blank(),
             axis.text.x=element_blank(),
             axis.ticks.x=element_blank())
-  
+
     # Change colors and labels of strips
     g <- ggplot_gtable(ggplot_build(p))
     striprt <- which(grepl('strip-r', g$layout$name) | grepl('strip-t', g$layout$name))
@@ -74,7 +74,7 @@ plot_sig_profiles <- function(deepCSA_run, extraction_method){
     
         k <- k + 1
     }
-  
+
     # Add the plot to the list
     plots[[length(plots) + 1]] <- g
     }
@@ -92,7 +92,7 @@ plot_exposures_HDP <- function(deepCSA_run){
     colors <-c("#005f73","#94d2bd","#0a9396","#e9d8a6", "#ee9b00","#f37674", "#9b2226")
     all_mut_df <- read.table(paste("../..//supplementary/supp_note_5/data/Mutation_stats_per_genome_per_sample.med.all.csv", sep=""), sep=",", header =TRUE)
     samples_order = all_mut_df[order(all_mut_df$Total_mut_genome, decreasing=TRUE),]$SAMPLE_ID
-    exposures_file = read.table(paste("/workspace/nobackup/bladder_ts/results/", deepCSA_run, "/signatures_hdp/samples_matrix.all.compared_output_dir/signatureExposures_counts.txt", sep=""), sep="\t", header=T)
+    exposures_file = read.table(paste(deepCSA_run, "/signatures_hdp/samples_matrix.all.compared_output_dir/signatureExposures_counts.txt", sep=""), sep="\t", header=T)
     names_list <- c("N1", "N2", "N3", "N4", "N5", "N6", "N7", "N8", "N9", "N10", "N11", "N12", "N13", "N14", "N15", "N16")
     colnames(exposures_file) <- names_list[1:ncol(exposures_file)]
     n_sigs <- ncol(exposures_file)
@@ -132,7 +132,6 @@ plot_exposures_sigprofiler <- function(deepCSA_run){
     return(plot_exposures_sigprofiler)
 }
 
- 
 
 profile_hdp <- arrangeGrob(plot_sig_profiles(deepCSA_run, "HDP"), top = textGrob("C", x = unit(0, "npc"), y = unit(1, "npc"), just=c("left","top"), hjust=-1.5, vjust=2,gp = gpar(fontface = "bold")))
 exposures_hdp <- arrangeGrob(plot_exposures_HDP(deepCSA_run), top = textGrob("D", x = unit(0, "npc"), hjust=-1.5, vjust=2,gp = gpar(fontface = "bold")))
@@ -149,7 +148,7 @@ hlay <- rbind(c(1,1,2,2),
                 c(3,3,4,4),
                 c(3,3,4,4),
                 c(3,3,4,4)
-              )
+                )
 
 png(filename = outplot, width = 35, height = 25, units = "cm", res = 300)
 grid.arrange(profile_sigprofiler,profile_hdp,exposures_sigprofiler,exposures_hdp,layout_matrix=hlay)

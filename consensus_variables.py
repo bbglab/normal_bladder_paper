@@ -1,4 +1,39 @@
 import json
+import matplotlib as mpl
+import os
+
+# paths
+all_data_path="/data/bbg/nobackup/bladder_ts/bladder_paper_data"
+
+additional_data_dir = f"{all_data_path}/additional_data"
+
+deepcsa_run_dir = f"{all_data_path}/deepCSA_outputs"
+
+maf_file = f"{deepcsa_run_dir}/germline_somatic/all_samples.filtered.tsv.gz"
+clean_maf_file = f"{deepcsa_run_dir}/clean_germline_somatic/all_samples.clean.mutations.tsv"
+somatic_maf_file = f"{deepcsa_run_dir}/clean_somatic/all_samples.somatic.mutations.tsv"
+
+# FIXME this cannot be shared for now since it contains information from the specific mutated samples 
+#    due to this, figures 1b, 9b and 9d cannot be fully regenerated, we will soon provide an updated
+#    version of the dataset so that this is possible
+intogen_path = "/data/bbg/datasets/intogen/output/runs/v2024/20240409_ALL" 
+intogen_muts_path = os.path.join(intogen_path, "steps/vep")
+
+
+# extended fig 9
+o3d_cancer_path = f"{additional_data_dir}/oncodrive3d_results"
+
+
+#TODO: add a metadata.tsv file in the repo with all the metadata compiled
+clinvars_file = f"{additional_data_dir}/20250516_metadata_bladder.with_depths.tsv"
+
+
+# oncodrive3d datasets
+o3d_alt_datasets = f"{additional_data_dir}/datasets_240506" # These "alt" are used to retrieve annotations in equivalent Uniprot ID that are missing in the MANE related ones
+o3d_datasets = f"{additional_data_dir}/datasets_mane_240506"
+o3d_annotations = f"{additional_data_dir}/annotations_mane_240506"
+
+pfam_domains_file = f"{o3d_annotations}/uniprot_feat.tsv"
 
 
 
@@ -23,8 +58,7 @@ def load_samples_info(rundir):
 
 # Sample names
 all_sample_names_dirty = ['P19_0001_BDO_01', 'P19_0001_BTR_01', 'P19_0002_BDO_01', 'P19_0002_BTR_01', 'P19_0003_BDO_01', 'P19_0004_BDO_01', 'P19_0004_BTR_01', 'P19_0005_BDO_01', 'P19_0005_BTR_01', 'P19_0006_BDO_01', 'P19_0007_BDO_01', 'P19_0007_BTR_01', 'P19_0008_BDO_01', 'P19_0008_BTR_01', 'P19_0009_BDO_01', 'P19_0009_BTR_01',
-                          # 'P19_0010_BDO_01', 'P19_0010_BTR_01',
-                          'P19_0011_BDO_01', 'P19_0011_BTR_01', 'P19_0012_BDO_01', 'P19_0012_BTR_01', 'P19_0013_BDO_01', 'P19_0013_BTR_01', 'P19_0014_BDO_01', 'P19_0014_BTR_01', 'P19_0015_BDO_01', 'P19_0015_BTR_01', 'P19_0016_BDO_01', 'P19_0016_BTR_01', 'P19_0018_BDO_01', 'P19_0018_BTR_01', 'P19_0019_BDO_01', 'P19_0019_BTR_01', 'P19_0020_BDO_01', 'P19_0020_BTR_01', 'P19_0023_BDO_01', 'P19_0023_BTR_01', 'P19_0024_BDO_01', 'P19_0024_BTR_01', 'P19_0025_BDO_01', 'P19_0025_BTR_01', 'P19_0026_BDO_01', 'P19_0026_BTR_01', 'P19_0027_BTR_01', 'P19_0028_BDO_01', 'P19_0028_BTR_01', 'P19_0029_BDO_01', 'P19_0029_BTR_01', 'P19_0030_BTR_01', 'P19_0031_BTR_01', 'P19_0033_BDO_01', 'P19_0033_BTR_01', 'P19_0034_BDO_01', 'P19_0034_BTR_01', 'P19_0035_BDO_01', 'P19_0036_BTR_01', 'P19_0038_BDO_01', 'P19_0039_BTR_01', 'P19_0040_BDO_01', 'P19_0040_BTR_01', 'P19_0041_BDO_01', 'P19_0041_BTR_01', 'P19_0042_BDO_01', 'P19_0042_BTR_01', 'P19_0043_BTR_01', 'P19_0045_BDO_01', 'P19_0045_BTR_01', 'P19_0046_BDO_01', 'P19_0046_BTR_01', 'P19_0047_BDO_01', 'P19_0047_BTR_01', 'P19_0048_BTR_01',
+                           'P19_0011_BDO_01', 'P19_0011_BTR_01', 'P19_0012_BDO_01', 'P19_0012_BTR_01', 'P19_0013_BDO_01', 'P19_0013_BTR_01', 'P19_0014_BDO_01', 'P19_0014_BTR_01', 'P19_0015_BDO_01', 'P19_0015_BTR_01', 'P19_0016_BDO_01', 'P19_0016_BTR_01', 'P19_0018_BDO_01', 'P19_0018_BTR_01', 'P19_0019_BDO_01', 'P19_0019_BTR_01', 'P19_0020_BDO_01', 'P19_0020_BTR_01', 'P19_0023_BDO_01', 'P19_0023_BTR_01', 'P19_0024_BDO_01', 'P19_0024_BTR_01', 'P19_0025_BDO_01', 'P19_0025_BTR_01', 'P19_0026_BDO_01', 'P19_0026_BTR_01', 'P19_0027_BTR_01', 'P19_0028_BDO_01', 'P19_0028_BTR_01', 'P19_0029_BDO_01', 'P19_0029_BTR_01', 'P19_0030_BTR_01', 'P19_0031_BTR_01', 'P19_0033_BDO_01', 'P19_0033_BTR_01', 'P19_0034_BDO_01', 'P19_0034_BTR_01', 'P19_0035_BDO_01', 'P19_0036_BTR_01', 'P19_0038_BDO_01', 'P19_0039_BTR_01', 'P19_0040_BDO_01', 'P19_0040_BTR_01', 'P19_0041_BDO_01', 'P19_0041_BTR_01', 'P19_0042_BDO_01', 'P19_0042_BTR_01', 'P19_0043_BTR_01', 'P19_0045_BDO_01', 'P19_0045_BTR_01', 'P19_0046_BDO_01', 'P19_0046_BTR_01', 'P19_0047_BDO_01', 'P19_0047_BTR_01', 'P19_0048_BTR_01',
 # new samples
 'P19_0050_BDO_01', 'P19_0050_BTR_01', 'P19_0051_BDO_01','P19_0051_BTR_01',
 'P19_0052_BDO_01', 'P19_0052_BTR_01', 'P19_0053_BDO_01', 'P19_0053_BTR_01']
@@ -36,7 +70,6 @@ repeated_samples = ['P19_0001_BDO_01', 'P19_0001_BTR_01', 'P19_0002_BDO_01', 'P1
 updated_sample_names = ['01_DO', '01_TR', '02_DO', '02_TR', '03_DO', '04_DO', '04_TR', '05_DO', '05_TR', '06_DO', '07_DO', '07_TR', '08_DO', '08_TR', '09_DO', '09_TR', '10_DO', '10_TR', '11_DO', '11_TR', '12_DO', '12_TR', '13_DO', '13_TR', '14_DO', '14_TR', '15_DO', '15_TR', '16_DO', '16_TR', '18_DO', '18_TR', '19_DO', '19_TR', '20_DO', '20_TR', '23_DO', '23_TR', '24_DO', '24_TR', '25_DO', '25_TR', '26_DO', '26_TR', '27_TR', '28_DO', '28_TR', '29_DO', '29_TR', '30_TR', '31_TR', '33_DO', '33_TR', '34_DO', '34_TR', '35_DO', '36_TR', '38_DO', '39_TR', '40_DO', '40_TR', '41_DO', '41_TR', '42_DO', '42_TR', '43_TR', '45_DO', '45_TR', '46_DO', '46_TR', '47_DO', '47_TR', '48_TR']
 
 old2new_sample_names = {'P19_0001_BDO_01': '01_DO', 'P19_0001_BTR_01': '01_TR', 'P19_0002_BDO_01': '02_DO', 'P19_0002_BTR_01': '02_TR', 'P19_0003_BDO_01': '03_DO', 'P19_0004_BDO_01': '04_DO', 'P19_0004_BTR_01': '04_TR', 'P19_0005_BDO_01': '05_DO', 'P19_0005_BTR_01': '05_TR', 'P19_0006_BDO_01': '06_DO', 'P19_0007_BDO_01': '07_DO', 'P19_0007_BTR_01': '07_TR', 'P19_0008_BDO_01': '08_DO', 'P19_0008_BTR_01': '08_TR', 'P19_0009_BDO_01': '09_DO', 'P19_0009_BTR_01': '09_TR', 
-# 'P19_0010_BDO_01': '10_DO', 'P19_0010_BTR_01': '10_TR',
 'P19_0011_BDO_01': '11_DO', 'P19_0011_BTR_01': '11_TR', 'P19_0012_BDO_01': '12_DO', 'P19_0012_BTR_01': '12_TR', 'P19_0013_BDO_01': '13_DO', 'P19_0013_BTR_01': '13_TR', 'P19_0014_BDO_01': '14_DO', 'P19_0014_BTR_01': '14_TR', 'P19_0015_BDO_01': '15_DO', 'P19_0015_BTR_01': '15_TR', 'P19_0016_BDO_01': '16_DO', 'P19_0016_BTR_01': '16_TR', 'P19_0018_BDO_01': '18_DO', 'P19_0018_BTR_01': '18_TR', 'P19_0019_BDO_01': '19_DO', 'P19_0019_BTR_01': '19_TR', 'P19_0020_BDO_01': '20_DO', 'P19_0020_BTR_01': '20_TR', 'P19_0023_BDO_01': '23_DO', 'P19_0023_BTR_01': '23_TR', 'P19_0024_BDO_01': '24_DO', 'P19_0024_BTR_01': '24_TR', 'P19_0025_BDO_01': '25_DO', 'P19_0025_BTR_01': '25_TR', 'P19_0026_BDO_01': '26_DO', 'P19_0026_BTR_01': '26_TR', 'P19_0027_BTR_01': '27_TR', 'P19_0028_BDO_01': '28_DO', 'P19_0028_BTR_01': '28_TR', 'P19_0029_BDO_01': '29_DO', 'P19_0029_BTR_01': '29_TR', 'P19_0030_BTR_01': '30_TR', 'P19_0031_BTR_01': '31_TR', 'P19_0033_BDO_01': '33_DO', 'P19_0033_BTR_01': '33_TR', 'P19_0034_BDO_01': '34_DO', 'P19_0034_BTR_01': '34_TR', 'P19_0035_BDO_01': '35_DO', 'P19_0036_BTR_01': '36_TR', 'P19_0038_BDO_01': '38_DO', 'P19_0039_BTR_01': '39_TR', 'P19_0040_BDO_01': '40_DO', 'P19_0040_BTR_01': '40_TR', 'P19_0041_BDO_01': '41_DO', 'P19_0041_BTR_01': '41_TR', 'P19_0042_BDO_01': '42_DO', 'P19_0042_BTR_01': '42_TR', 'P19_0043_BTR_01': '43_TR', 'P19_0045_BDO_01': '45_DO', 'P19_0045_BTR_01': '45_TR', 'P19_0046_BDO_01': '46_DO', 'P19_0046_BTR_01': '46_TR', 'P19_0047_BDO_01': '47_DO', 'P19_0047_BTR_01': '47_TR', 'P19_0048_BTR_01': '48_TR',
 # new samples
 'P19_0050_BDO_01': '50_DO', 'P19_0050_BTR_01': '50_TR', 'P19_0051_BDO_01': '51_DO','P19_0051_BTR_01': '51_TR',
@@ -45,30 +78,12 @@ old2new_sample_names = {'P19_0001_BDO_01': '01_DO', 'P19_0001_BTR_01': '01_TR', 
 
 
 single_sample_per_donor = ['01_TR', '02_TR', '03_DO', '04_TR', '05_TR', '06_DO', '07_TR', '08_TR', '09_TR',
-# '10_TR',
 '11_TR', '12_TR', '13_TR', '14_TR', '15_TR', '16_TR', '18_TR', '19_TR', '20_TR', '23_TR', '24_TR', '25_TR', '26_TR', '27_TR', '28_TR', '29_TR', '30_TR', '31_TR', '33_TR', '34_TR', '35_DO', '36_TR', '38_DO', '39_TR', '40_TR', '41_TR', '42_TR', '43_TR', '45_TR', '46_TR', '47_TR', '48_TR',
 # new samples
 '50_TR', '51_TR', '52_TR', '53_TR']
 
 females_age_ordered = ['33', '52', '43', '12', '06', '30', '20', '38', '09', '41', '19', '25', '05', '13', '02', '03', '29']
 males_age_ordered = ['36', '01', '24', '31', '27', '40', '47', '50', '04', '26', '14', '35', '46', '11', '48', '28', '07', '15', '08', '34', '53', '39', '16', '51', '23', '45', '42', '18']
-
-# paths
-origin_dir = '/data/bbg'
-bladder_results = f"{origin_dir}/nobackup/bladder_ts/results"
-deepcsa_run_dir = f"{bladder_results}/2025-05-14_deepCSA_45_donors"
-maf_file = f"{deepcsa_run_dir}/germline_somatic/all_samples.filtered.tsv.gz"
-clean_maf_file = f"{deepcsa_run_dir}/clean_germline_somatic/all_samples.clean.mutations.tsv"
-somatic_maf_file = f"{deepcsa_run_dir}/clean_somatic/all_samples.somatic.mutations.tsv"
-
-clinvars_file = f"{origin_dir}/projects/bladder_ts/data/complete_cohort/samples_metadata/20250516_metadata_bladder.with_depths.tsv" #TODO: add a metadata.tsv file in the repo with all the metadata compiled
-clinvars_regr_file = f"{origin_dir}/projects/bladder_ts/data/complete_cohort/samples_metadata/20250516_metadata_bladder.with_depths.tsv"
-
-# oncodrive3d datasets
-## TODO, make sure that this are absolute paths to the datasets
-o3d_alt_datasets = "/data/bbg/nobackup/scratch/oncodrive3d/datasets_240506" # These "alt" are used to rerieve annotations in equivalent Uniprot ID that are missing in the MANE related ones
-o3d_datasets = "/data/bbg/nobackup/scratch/oncodrive3d/datasets_mane_240506"
-o3d_annotations = "/data/bbg/nobackup/scratch/oncodrive3d/annotations_mane_240506"
 
 
 
@@ -114,34 +129,34 @@ genes_mut_epithelium_order = ['KMT2D', 'KDM6A', 'ARID1A', 'RBM10', 'FOXQ1',
                               'KMT2C', 'RB1', 'TP53']
 
 gene_order_agebias = [
- 'RBM10',
- 'KDM6A',
- 'KMT2D',
- 'TP53',
- 'STAG2',
- 'CDKN1A',
- 'ARID1A',
- 'CREBBP',
- 'EP300',
- 'NOTCH2',
- 'KMT2C',
- 'RB1',
- 'FOXQ1']
+'RBM10',
+'KDM6A',
+'KMT2D',
+'TP53',
+'STAG2',
+'CDKN1A',
+'ARID1A',
+'CREBBP',
+'EP300',
+'NOTCH2',
+'KMT2C',
+'RB1',
+'FOXQ1']
 
 gene_order_sexbias = [
- 'RBM10',
- 'CDKN1A',
- 'ARID1A',
- 'STAG2',
- 'KDM6A',
- 'KMT2D',
- 'TP53',
- 'CREBBP',
- 'EP300',
- 'NOTCH2',
- 'KMT2C',
- 'RB1',
- 'FOXQ1']
+'RBM10',
+'CDKN1A',
+'ARID1A',
+'STAG2',
+'KDM6A',
+'KMT2D',
+'TP53',
+'CREBBP',
+'EP300',
+'NOTCH2',
+'KMT2C',
+'RB1',
+'FOXQ1']
 
 genes_regressions = ["KMT2D","EP300","ARID1A","CREBBP","NOTCH2","KMT2C","STAG2","RB1",
                    "RBM10","KDM6A","TP53",
@@ -193,6 +208,11 @@ metric_id2name_ylabel = {
 metric_id2name_title = {
    "": ""
 }
+
+
+####
+# colors
+####
 
 # color dictionaries
 gene2color = {
@@ -264,38 +284,77 @@ clinvar2color = {
    }
 }
 
+####
+# clinvars
+####
+
 metrics_colors_dictionary = {"ofml"        : "viridis_r",
-                             "ofml_score"  : "#6A33E0",
-                             "omega_trunc" : "#FA5E32",
-                             "omega_synon" : "#89E4A2",
-                             "omega_miss"  : "#FABE4A",
-                             "o3d_score"   : "#6DBDCC",
-                             "o3d_cluster" : "skyblue",
-                             "o3d_prob"    : "darkgray",
-                             "frameshift"  : "#E4ACF4",
-                             "inframe"     : "C5",
-                             "hv_lines"    : "lightgray", # horizontal and vertical lines,
-                             "hv_lines_needle" : "gray",
-                             "needle_obs"  : "#003366",
-                             "omega_miss_tert" : "#f5840c",
-                             "omega_synon_tert": "#378c12",
-                             "nonsense" : "#FA5E32",
-                             "synonymous" : "#89E4A2",
-                             "missense"  : "#FABE4A",
-                             #"nonsense"    : "#FB8E6F",  
-                             # "synonymous"  : "#ACECBD", 
-                             #"missense"    : "#FBD180", 
-                             "indel"       : "#ECC4F7", 
-                             "splicing"    : "#A1C5DF",
-                            }
-# plot configs
+                              "ofml_score"  : "#6A33E0",
+                              "omega_trunc" : "#FA5E32",
+                              "omega_synon" : "#89E4A2",
+                              "omega_miss"  : "#FABE4A",
+                              "o3d_score"   : "#6DBDCC",
+                              "o3d_cluster" : "skyblue",
+                              "o3d_prob"    : "darkgray",
+                              "frameshift"  : "#E4ACF4",
+                              "inframe"     : "C5",
+                              "hv_lines"    : "lightgray", # horizontal and vertical lines,
+                              "hv_lines_needle" : "gray",
+                              "needle_obs"  : "#003366",
+                              "omega_miss_tert" : "#f5840c",
+                              "omega_synon_tert": "#378c12",
+                              "nonsense" : "#FA5E32",
+                              "synonymous" : "#89E4A2",
+                              "missense"  : "#FABE4A",
+                              #"nonsense"    : "#FB8E6F",  
+                              # "synonymous"  : "#ACECBD", 
+                              #"missense"    : "#FBD180", 
+                              "indel"       : "#ECC4F7", 
+                              "splicing"    : "#A1C5DF",
+                              }
+
+
+####
+# plotting configurations
+####
+
 plots_general_config = {
-                        "dot_size_scplot": 40,
-                        "dot_size_coeffplot": 70,
+
+                        # fonsizes
+                        "ylabel_fontsize": 6,
+                        "xlabel_fontsize": 6,
+                        "xylabel_fontsize": 6,
+                        "title_fontsize": 7,
+                        "xyticks_fontsize": 5,
+                        "xticks_fontsize": 5,
+                        "yticks_fontsize": 5,
+                        "legend_fontsize": 5,
+                        "annots_fontsize": 5,
+
+                        "dot_size_scplot": 15,
+                        "dot_size_coeffplot": 5,
                         "dot_sizebelow_coeffplot": 40,
                         "dot_color_coeffplot": "#D3D3D3",
                         "dot_colorabove_coeffplot": "#D62728",
                         "dot_colorbelow_coeffplot": "#f29c9e",
                         "dot_edgethres_coeffplot": 0.2,
-                        "dot_edgewidth_coeffplot": 1.5
+                        "dot_edgewidth_coeffplot": 0.5
                         }
+
+
+mpl.rcParams.update({
+   'font.family': 'Arial',            # Enforce Arial
+   'pdf.fonttype': 42,                # TrueType for PDF
+   'ps.fonttype': 42,                 # TrueType for PS/EPS
+   'svg.fonttype': 'none',            # Keep text as editable text
+})
+
+
+mpl.rcParams.update({
+   'axes.titlesize'    : plots_general_config["title_fontsize"],       # Title font size
+   'axes.labelsize'    : plots_general_config["xylabel_fontsize"],     # X and Y axis labels
+   'xtick.labelsize'   : plots_general_config["xyticks_fontsize"],     # X tick labels
+   'ytick.labelsize'   : plots_general_config["xyticks_fontsize"],     # Y tick labels
+   'legend.fontsize'   : plots_general_config["legend_fontsize"],      # Legend text
+   'figure.titlesize'  : plots_general_config["title_fontsize"],       # Figure suptitle (if used)
+})
